@@ -86,7 +86,7 @@ export const GO_ROUTES: Record<string, GoRoute> = {
   ant:       { pane: 'ant',        label: 'NSANET://ant',        restricted: false },
   awards:    { pane: 'awards',     label: 'NSANET://awards',     restricted: false },
   tao:       { pane: 'tao',        label: 'NSANET://tao',        restricted: true  },
-  sigint:    { pane: 'analytics',  label: 'NSANET://sigint',     restricted: true  },
+  sso:       { pane: 'analytics',  label: 'NSANET://sso',        restricted: true  },
   scs:       { pane: 'scs',        label: 'NSANET://scs',        restricted: true  },
 }
 
