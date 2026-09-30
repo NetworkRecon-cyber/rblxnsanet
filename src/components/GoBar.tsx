@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Search, LayoutDashboard, Users, MessageSquare, FolderLock, UserCog, BookOpen, Award } from 'lucide-react'
+import { Search, LayoutDashboard, Users, MessageSquare, FolderLock, UserCog, Award } from 'lucide-react'
 import { hasPermission } from '../data/auth'
 import type { User, Perm } from '../data/auth'
 import { Badge } from './UI'
@@ -19,9 +19,8 @@ const ALL_ITEMS: NavItem[] = [
   { key: 'chat',      name: 'Comms',                  desc: 'Secure internal communications',           icon: MessageSquare,   restricted: false, perm: null          },
   { key: 'files',     name: 'File Vault',             desc: 'Classified document repository',           icon: FolderLock,      restricted: false, perm: 'vaultView'   },
   { key: 'accounts',  name: 'Account Management',     desc: 'Staff provisioning & access control',      icon: UserCog,         restricted: false, perm: 'acctView'    },
-  { key: 'ant',       name: 'ANT Catalog',            desc: 'TAO product catalog — exploitation tools', icon: BookOpen,        restricted: false, perm: 'antView'     },
   { key: 'awards',    name: 'Awards & Commendations', desc: 'Official recognition registry',            icon: Award,           restricted: false, perm: 'awardsView'  },
-  // TAO, SIGINT/Analytics, SCS intentionally omitted — URL-only access
+  // TAO, ANT, SSO, SCS intentionally omitted — URL-only access
 ]
 
 interface GoBarProps {

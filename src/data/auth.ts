@@ -72,6 +72,7 @@ export const ROLE_LABELS: Record<string, { label: string; color: string }> = {
 // ── Access codes for restricted panes ──
 export const ACCESS_CODES: Record<string, string> = {
   tao:       'BYZANTINE RAPTOR',
+  ant:       'BYZANTINE RAPTOR',
   analytics: 'OAKSTAR PRISM',
   scs:       'TURBINE ECHO',
 }
@@ -86,6 +87,7 @@ export const GO_ROUTES: Record<string, GoRoute> = {
   ant:       { pane: 'ant',        label: 'NSANET://ant',        restricted: false },
   awards:    { pane: 'awards',     label: 'NSANET://awards',     restricted: false },
   tao:       { pane: 'tao',        label: 'NSANET://tao',        restricted: true  },
+  ant:       { pane: 'ant',        label: 'NSANET://ant',        restricted: true  },
   sso:       { pane: 'analytics',  label: 'NSANET://sso',        restricted: true  },
   scs:       { pane: 'scs',        label: 'NSANET://scs',        restricted: true  },
 }

@@ -166,7 +166,6 @@ export default function App() {
     if (!hasPermission(user, 'staffView') && key === 'staff')    { showToast('ACCESS DENIED'); return }
     if (!hasPermission(user, 'vaultView') && key === 'files')    { showToast('ACCESS DENIED'); return }
     if (!hasPermission(user, 'acctView')  && key === 'accounts') { showToast('ACCESS DENIED'); return }
-    if (!hasPermission(user, 'antView')   && key === 'ant')      { showToast('ACCESS DENIED'); return }
     setPane(key)
   }
 

@@ -1,7 +1,7 @@
 import React from 'react'
 import {
   LayoutDashboard, Users, MessageSquare, FolderLock,
-  UserCog, BookOpen, Award, Lock
+  UserCog, Award
 } from 'lucide-react'
 import { hasPermission } from '../data/auth'
 import type { User, Perm } from '../data/auth'
@@ -15,7 +15,7 @@ interface NavItem {
   section?:   string
 }
 
-// TAO, Analytics/SIGINT, and SCS are not listed here — accessible via URL only (?go=tao / ?go=sigint / ?go=scs)
+// TAO, ANT, SSO, and SCS are not listed here — accessible via URL only (?go=tao / ?go=ant / ?go=sso / ?go=scs)
 const NAV: NavItem[] = [
   { key: 'overview',  label: 'Overview',      icon: LayoutDashboard, perm: null,         restricted: false, section: 'MAIN' },
   { key: 'staff',     label: 'Staff',          icon: Users,           perm: 'staffView',  restricted: false },
@@ -23,7 +23,6 @@ const NAV: NavItem[] = [
   { key: 'files',     label: 'File Vault',     icon: FolderLock,      perm: 'vaultView',  restricted: false },
   { key: 'accounts',  label: 'Accounts',       icon: UserCog,         perm: 'acctView',   restricted: false },
   { key: 'awards',    label: 'Awards',         icon: Award,           perm: 'awardsView', restricted: false },
-  { key: 'ant',       label: 'ANT Catalog',    icon: BookOpen,        perm: 'antView',    restricted: false, section: 'RESTRICTED' },
 ]
 
 interface SidebarProps {
@@ -73,9 +72,6 @@ export default function Sidebar({ user, active, onNavigate, onRestricted }: Side
               >
                 <Icon size={14} className={isActive ? 'text-blue-400' : item.restricted ? 'text-amber-600' : 'text-slate-500'} />
                 <span className="flex-1 truncate">{item.label}</span>
-                {item.restricted && (
-                  <Lock size={9} className="text-amber-700 flex-shrink-0" />
-                )}
               </button>
             </React.Fragment>
           )
