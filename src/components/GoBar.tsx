@@ -14,13 +14,14 @@ interface NavItem {
 }
 
 const ALL_ITEMS: NavItem[] = [
-  { key: 'overview',  name: 'Overview',           desc: 'Operations dashboard',                  icon: LayoutDashboard, restricted: false, perm: null          },
-  { key: 'staff',     name: 'Staff Roster',        desc: 'Personnel directory & status',          icon: Users,           restricted: false, perm: 'staffView'   },
-  { key: 'chat',      name: 'Comms',               desc: 'Secure internal communications',        icon: MessageSquare,   restricted: false, perm: null          },
-  { key: 'files',     name: 'File Vault',          desc: 'Classified document repository',        icon: FolderLock,      restricted: false, perm: 'vaultView'   },
-  { key: 'accounts',  name: 'Account Management',  desc: 'Staff provisioning & access control',   icon: UserCog,         restricted: false, perm: 'acctView'    },
-  { key: 'ant',       name: 'ANT Catalog',         desc: 'TAO product catalog — exploitation tools', icon: BookOpen,     restricted: false, perm: 'antView'     },
-  { key: 'awards',    name: 'Awards & Commendations', desc: 'Official recognition registry',      icon: Award,           restricted: false, perm: 'awardsView'  },
+  { key: 'overview',  name: 'Overview',              desc: 'Operations dashboard',                     icon: LayoutDashboard, restricted: false, perm: null          },
+  { key: 'staff',     name: 'Staff Roster',           desc: 'Personnel directory & status',             icon: Users,           restricted: false, perm: 'staffView'   },
+  { key: 'chat',      name: 'Comms',                  desc: 'Secure internal communications',           icon: MessageSquare,   restricted: false, perm: null          },
+  { key: 'files',     name: 'File Vault',             desc: 'Classified document repository',           icon: FolderLock,      restricted: false, perm: 'vaultView'   },
+  { key: 'accounts',  name: 'Account Management',     desc: 'Staff provisioning & access control',      icon: UserCog,         restricted: false, perm: 'acctView'    },
+  { key: 'ant',       name: 'ANT Catalog',            desc: 'TAO product catalog — exploitation tools', icon: BookOpen,        restricted: false, perm: 'antView'     },
+  { key: 'awards',    name: 'Awards & Commendations', desc: 'Official recognition registry',            icon: Award,           restricted: false, perm: 'awardsView'  },
+  // TAO, SIGINT/Analytics, SCS intentionally omitted — URL-only access
 ]
 
 interface GoBarProps {

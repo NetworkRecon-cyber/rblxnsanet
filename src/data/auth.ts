@@ -71,9 +71,9 @@ export const ROLE_LABELS: Record<string, { label: string; color: string }> = {
 
 // ── Access codes for restricted panes ──
 export const ACCESS_CODES: Record<string, string> = {
-  tao:       'TAO-CLEARANCE-7',
-  analytics: 'SIGINT-ACCESS-9',
-  scs:       'SCS-CLEARANCE-3',
+  tao:       'BYZANTINE RAPTOR',
+  analytics: 'OAKSTAR PRISM',
+  scs:       'TURBINE ECHO',
 }
 
 // ── Go routes ──

@@ -1,7 +1,7 @@
 import React from 'react'
 import {
   LayoutDashboard, Users, MessageSquare, FolderLock,
-  UserCog, BookOpen, Award, Radio, BarChart2, Globe, Lock
+  UserCog, BookOpen, Award, Lock
 } from 'lucide-react'
 import { hasPermission } from '../data/auth'
 import type { User, Perm } from '../data/auth'
@@ -15,6 +15,7 @@ interface NavItem {
   section?:   string
 }
 
+// TAO, Analytics/SIGINT, and SCS are not listed here — accessible via URL only (?go=tao / ?go=sigint / ?go=scs)
 const NAV: NavItem[] = [
   { key: 'overview',  label: 'Overview',      icon: LayoutDashboard, perm: null,         restricted: false, section: 'MAIN' },
   { key: 'staff',     label: 'Staff',          icon: Users,           perm: 'staffView',  restricted: false },
@@ -23,9 +24,6 @@ const NAV: NavItem[] = [
   { key: 'accounts',  label: 'Accounts',       icon: UserCog,         perm: 'acctView',   restricted: false },
   { key: 'awards',    label: 'Awards',         icon: Award,           perm: 'awardsView', restricted: false },
   { key: 'ant',       label: 'ANT Catalog',    icon: BookOpen,        perm: 'antView',    restricted: false, section: 'RESTRICTED' },
-  { key: 'tao',       label: 'TAO',            icon: Globe,           perm: null,         restricted: true  },
-  { key: 'analytics', label: 'Analytics',      icon: BarChart2,       perm: null,         restricted: true  },
-  { key: 'scs',       label: 'SCS',            icon: Radio,           perm: null,         restricted: true  },
 ]
 
 interface SidebarProps {
