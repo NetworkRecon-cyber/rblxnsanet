@@ -156,6 +156,9 @@ export default function App() {
     sessionStorage.removeItem('nsanet_user')
     sessionStorage.removeItem('nsanet_sid')
     // no-op: Railway backend removed
+    const url = new URL(window.location.href)
+    url.searchParams.delete('go')
+    window.history.replaceState(null, '', url.toString())
     setUser(null); setSessionId(null); setPhase('login')
     setPane('overview'); setGoOpen(false)
     setAccessRoute(null); setPendingRoute(null)
@@ -223,6 +226,15 @@ export default function App() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [phase])
+
+  // ── Sync URL to active pane ──
+  useEffect(() => {
+    if (phase !== 'portal') return
+    const key = Object.entries(GO_ROUTES).find(([, r]) => r.pane === pane)?.[0] ?? pane
+    const url = new URL(window.location.href)
+    url.searchParams.set('go', key)
+    window.history.replaceState(null, '', url.toString())
+  }, [pane, phase])
 
   // ── Heartbeat (Railway removed — no-op) ──
 
