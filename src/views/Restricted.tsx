@@ -101,7 +101,7 @@ const TYPE_STYLE: Record<string, string> = {
 
 const BLANK_OP: Operation = { codename: '', status: 'ACTIVE', target: '', type: 'CNE', initiated: '', officer: '' }
 
-// ─── CNO Implants (merged into TAO) ──────────────────────────────────────────
+// ─── TAO Implants ─────────────────────────────────────────────────────────────
 
 interface Implant {
   id:          string
@@ -166,14 +166,14 @@ export const TAO: React.FC<{ user: User }> = ({ user }) => {
       <div className="flex items-start gap-3 bg-red-950/30 border border-red-900/50 rounded-xl px-5 py-3.5">
         <AlertOctagon size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
         <div>
-          <div className="text-red-400 font-mono text-[11px] font-bold tracking-widest">RESTRICTED — TAO/CNO ACCESS ONLY</div>
-          <div className="text-red-500/60 font-mono text-[10px] mt-0.5">TAILORED ACCESS OPERATIONS // COMPUTER NETWORK OPERATIONS // TS//SI//TK//NOFORN</div>
+          <div className="text-red-400 font-mono text-[11px] font-bold tracking-widest">RESTRICTED — TAO ACCESS ONLY</div>
+          <div className="text-red-500/60 font-mono text-[10px] mt-0.5">TAILORED ACCESS OPERATIONS // TS//SI//TK//NOFORN</div>
         </div>
       </div>
 
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-red-400 tracking-wide">TAO / CNO Operations Center</h1>
+          <h1 className="text-lg font-semibold text-red-400 tracking-wide">TAO Operations Center</h1>
           <p className="text-[12px] text-slate-500 mt-0.5">Operator: <span className="font-mono text-red-400">{user.codename}</span></p>
         </div>
         <div className="flex items-center gap-1.5">
@@ -241,11 +241,11 @@ export const TAO: React.FC<{ user: User }> = ({ user }) => {
         </table>
       </div>
 
-      {/* CNO Implants */}
+      {/* TAO Implants */}
       <div className="bg-[#0C0F1A] border border-amber-900/30 rounded-xl overflow-hidden">
         <div className="px-5 py-3.5 border-b border-[#1E2540] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-[12px] font-semibold text-amber-400">CNO Active Implants</span>
+            <span className="text-[12px] font-semibold text-amber-400">Active Implants</span>
             <div className="flex items-center gap-1.5">
               <Activity size={11} className="text-green-400 animate-pulse" />
               <span className="text-[10px] font-mono text-green-400">{activeImplants} ACTIVE</span>

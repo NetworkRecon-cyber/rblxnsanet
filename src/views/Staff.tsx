@@ -22,7 +22,7 @@ const STAFF: StaffMember[] = [
   { id: 'NSA-002', codename: 'RAVEN',     role: 'Deputy Director', clearance: 'TS/SCI',     dept: 'EXECUTIVE',  status: 'ACTIVE'    },
   { id: 'NSA-003', codename: 'CIPHER',    role: 'Analyst',         clearance: 'TS/SCI',     dept: 'SIGINT',     status: 'ACTIVE'    },
   { id: 'NSA-004', codename: 'WRAITH',    role: 'Field Officer',   clearance: 'TS',         dept: 'TAO',        status: 'ACTIVE'    },
-  { id: 'NSA-005', codename: 'SPECTER',   role: 'Analyst',         clearance: 'TS/SCI',     dept: 'CNO',        status: 'ACTIVE'    },
+  { id: 'NSA-005', codename: 'SPECTER',   role: 'Analyst',         clearance: 'TS/SCI',     dept: 'TAO',        status: 'ACTIVE'    },
   { id: 'NSA-006', codename: 'ORACLE',    role: 'Cryptanalyst',    clearance: 'TS/SCI/SAP', dept: 'CRYPTOLOGY', status: 'INACTIVE'  },
   { id: 'NSA-007', codename: 'PHANTOM',   role: 'Surveillance',    clearance: 'SECRET',     dept: 'SCS',        status: 'ACTIVE'    },
   { id: 'NSA-008', codename: 'VORTEX',    role: 'Systems Admin',   clearance: 'TS',         dept: 'IT/INFOSEC', status: 'SUSPENDED' },

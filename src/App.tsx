@@ -13,7 +13,7 @@ import Accounts  from './views/Accounts'
 import ANTCatalog from './views/ANTCatalog'
 import Awards    from './views/Awards'
 import { TAO, Analytics } from './views/Restricted'
-import { SCS }   from './views/SCS_CNO'
+import { SCS }   from './views/SCS'
 import { hasPermission, GO_ROUTES, USERS } from './data/auth'
 // Railway backend removed — auth handled by Supabase
 import type { User, GoRoute } from './data/auth'
