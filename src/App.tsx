@@ -22,7 +22,7 @@ import type { User, GoRoute } from './data/auth'
 const PANE_CLASS: Record<string, string> = {
   scs:       'TOP SECRET//COMINT//COMINT-STATEROOM//ORCON/NOFORN',
   tao:       'TOP SECRET//COMINT//TALENT KEYHOLE//ORCON/NOFORN',
-  analytics: 'TOP SECRET//SI//ORCON/NOFORN',
+  analytics: 'TOP SECRET//COMINT-ECI RGT/NOFORN',
   ant:       'TOP SECRET//SI//TALENT KEYHOLE//ORCON/NOFORN',
 }
 const DEFAULT_CLASS = 'TOP SECRET//COMINT//TALENT KEYHOLE//ORCON/NOFORN'

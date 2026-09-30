@@ -170,7 +170,7 @@ export const Analytics: React.FC<{ user: User }> = ({ user }) => (
       <AlertOctagon size={16} className="text-violet-400 flex-shrink-0 mt-0.5" />
       <div>
         <div className="text-violet-400 font-mono text-[11px] font-bold tracking-widest">RESTRICTED — SSO ACCESS ONLY</div>
-        <div className="text-violet-500/60 font-mono text-[10px] mt-0.5">SPECIAL SOURCE OPERATIONS // TS//SI//ORCON/NOFORN — OAKSTAR/PRISM COMPARTMENT</div>
+        <div className="text-violet-500/60 font-mono text-[10px] mt-0.5">SPECIAL SOURCE OPERATIONS // TS//COMINT-ECI RGT/NOFORN — OAKSTAR/PRISM COMPARTMENT</div>
       </div>
     </div>
 
