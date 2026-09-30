@@ -102,7 +102,8 @@ export default function Overview({ user, accounts = [] }: OverviewProps) {
   }
 
   // ── derived stats ──
-  const activeAgents = accounts.filter(a => a.status === 'active').length || accounts.length
+  const visibleAccounts = user.role === 'admin' ? accounts : accounts.filter(a => a.role !== 'admin')
+  const activeAgents = visibleAccounts.filter(a => a.status === 'active').length || visibleAccounts.length
   const sessions     = dbSessions ?? accounts.length
 
   const STATS = [

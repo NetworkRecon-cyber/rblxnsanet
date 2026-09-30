@@ -38,7 +38,11 @@ export default function Staff({ user, accounts = [] }: StaffProps) {
     )
   }
 
-  const filtered = accounts.filter(u =>
+  const visible = user.role === 'admin'
+    ? accounts
+    : accounts.filter(u => u.role !== 'admin')
+
+  const filtered = visible.filter(u =>
     u.codename.toLowerCase().includes(query.toLowerCase()) ||
     (u.dept ?? '').toLowerCase().includes(query.toLowerCase())
   )
