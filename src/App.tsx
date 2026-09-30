@@ -15,7 +15,7 @@ import Awards    from './views/Awards'
 import { TAO, Analytics } from './views/Restricted'
 import { SCS }   from './views/SCS_CNO'
 import { hasPermission, GO_ROUTES, USERS } from './data/auth'
-import { apiLogout, apiHeartbeat } from './data/api'
+// Railway backend removed — auth handled by Supabase
 import type { User, GoRoute } from './data/auth'
 
 // ── Pane classification lines ──
@@ -155,7 +155,7 @@ export default function App() {
     sessionStorage.removeItem('nsanet_pending_go')
     sessionStorage.removeItem('nsanet_user')
     sessionStorage.removeItem('nsanet_sid')
-    apiLogout().catch(() => {})
+    // no-op: Railway backend removed
     setUser(null); setSessionId(null); setPhase('login')
     setPane('overview'); setGoOpen(false)
     setAccessRoute(null); setPendingRoute(null)
@@ -225,23 +225,7 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [phase])
 
-  // ── Heartbeat ──
-  useEffect(() => {
-    if (phase !== 'portal' || !user) return
-    const t = setInterval(async () => {
-      try {
-        const ok = await apiHeartbeat()
-        if (!ok) {
-          const acct = USERS.find(u => u.codename === user.codename)
-          if (acct && acct.status && acct.status !== 'active') {
-            showToast('⚠ Session terminated'); setTimeout(handleLogout, 1500)
-          }
-        }
-      } catch {}
-    }, 30000)
-    return () => clearInterval(t)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, user])
+  // ── Heartbeat (Railway removed — no-op) ──
 
   // ── Login screen ──
   if (phase === 'login') {
