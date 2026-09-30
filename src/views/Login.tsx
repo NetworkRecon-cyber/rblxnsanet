@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Shield, Lock, Eye, EyeOff } from 'lucide-react'
+import { Lock, Eye, EyeOff } from 'lucide-react'
 import { authenticateUser } from '../data/users'
 import type { User } from '../data/auth'
 
@@ -51,9 +51,9 @@ export default function Login({ onLogin }: LoginProps) {
 
           {/* Logo */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full
               bg-[#0C0F1A] border border-[#1E2540] mb-5 shadow-[0_0_32px_rgba(63,111,232,0.12)]">
-              <Shield size={28} className="text-blue-500" />
+              <img src="/rblxnsanet/nsa-seal.png" alt="NSA" className="w-full h-full rounded-full object-contain p-1" />
             </div>
             <div className="text-2xl font-bold text-slate-100 tracking-[0.15em] mb-1">NSANET</div>
             <div className="text-[11px] font-mono text-slate-500 tracking-[0.1em]">
