@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Search, LogOut, ShieldCheck } from 'lucide-react'
+import { Search, LogOut } from 'lucide-react'
 import { RoleBadge } from './UI'
 import type { User } from '../data/auth'
 
@@ -28,7 +28,7 @@ export default function Topbar({ user, sessionId, onLogout, onGoBar }: TopbarPro
 
       {/* Logo */}
       <div className="flex items-center gap-2 w-[184px] flex-shrink-0">
-        <ShieldCheck size={15} className="text-blue-500" />
+        <img src="/rblxnsanet/nsa-seal.png" alt="NSA" className="w-6 h-6 rounded-full object-contain flex-shrink-0" />
         <span className="text-[13px] font-bold text-slate-100 tracking-[0.08em]">NSANET</span>
         <span className="bg-blue-600/20 text-blue-400 text-[9px] font-bold px-1.5 py-0.5
           rounded font-mono tracking-[0.06em] border border-blue-600/30">TS//SCI</span>
