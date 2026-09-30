@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { AlertOctagon, Target, Zap, BarChart2, Radio, Globe, TrendingUp, Plus, Pencil, Trash2, X, Check } from 'lucide-react'
+import { AlertOctagon, Target, Zap, BarChart2, Radio, Globe, TrendingUp, Plus, Pencil, Trash2, X, Check, Cpu, Activity } from 'lucide-react'
 import type { User } from '../data/auth'
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
@@ -101,10 +101,40 @@ const TYPE_STYLE: Record<string, string> = {
 
 const BLANK_OP: Operation = { codename: '', status: 'ACTIVE', target: '', type: 'CNE', initiated: '', officer: '' }
 
+// ─── CNO Implants (merged into TAO) ──────────────────────────────────────────
+
+interface Implant {
+  id:          string
+  target:      string
+  type:        string
+  status:      'ACTIVE' | 'DORMANT' | 'LOST'
+  lastContact: string
+}
+
+const DEFAULT_IMPLANTS: Implant[] = [
+  { id: 'IMP-8821', target: 'Kremlin Subnet A',      type: 'TURBINE/SECONDDATE', status: 'ACTIVE',  lastContact: '2m ago'      },
+  { id: 'IMP-4412', target: 'PLA Backbone Node 7',   type: 'FOXACID',            status: 'ACTIVE',  lastContact: '14m ago'     },
+  { id: 'IMP-9033', target: 'IRGC Comms Router',     type: 'QUANTUM INSERT',     status: 'DORMANT', lastContact: '6h ago'      },
+  { id: 'IMP-1105', target: 'NK Telecom Exchange',   type: 'DROPOUT JEEP',       status: 'LOST',    lastContact: '14 days ago' },
+  { id: 'IMP-6677', target: 'SVR C2 Infrastructure', type: 'BYZANTINE HADES',    status: 'ACTIVE',  lastContact: '1m ago'      },
+  { id: 'IMP-2290', target: 'FSB Internal Network',  type: 'TURBINE',            status: 'ACTIVE',  lastContact: '8m ago'      },
+]
+
+const IMP_STYLE: Record<string, string> = {
+  ACTIVE:  'text-green-400 bg-green-950/50 border-green-800/50',
+  DORMANT: 'text-slate-400 bg-slate-900/50 border-slate-700/50',
+  LOST:    'text-red-400   bg-red-950/50   border-red-800/50',
+}
+
+const BLANK_IMP: Implant = { id: '', target: '', type: '', status: 'ACTIVE', lastContact: '' }
+
 export const TAO: React.FC<{ user: User }> = ({ user }) => {
-  const [ops, setOps] = useLocalState<Operation[]>('nsanet_tao_ops', DEFAULT_OPS)
-  const [modal, setModal] = useState<{ mode: 'add' | 'edit'; idx: number } | null>(null)
-  const [form, setForm] = useState<Operation>(BLANK_OP)
+  const [ops,      setOps]      = useLocalState<Operation[]>('nsanet_tao_ops', DEFAULT_OPS)
+  const [implants, setImplants] = useLocalState<Implant[]>('nsanet_tao_implants', DEFAULT_IMPLANTS)
+  const [modal,    setModal]    = useState<{ mode: 'add' | 'edit'; idx: number } | null>(null)
+  const [form,     setForm]     = useState<Operation>(BLANK_OP)
+  const [iModal,   setIModal]   = useState<{ mode: 'add' | 'edit'; idx: number } | null>(null)
+  const [iForm,    setIForm]    = useState<Implant>(BLANK_IMP)
 
   function openAdd() { setForm(BLANK_OP); setModal({ mode: 'add', idx: -1 }) }
   function openEdit(i: number) { setForm({ ...ops[i] }); setModal({ mode: 'edit', idx: i }) }
@@ -118,22 +148,32 @@ export const TAO: React.FC<{ user: User }> = ({ user }) => {
   function fld(k: keyof Operation) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm(f => ({ ...f, [k]: e.target.value }))
   }
+  function ifld(k: keyof Implant) {
+    return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setIForm(f => ({ ...f, [k]: e.target.value }))
+  }
+  function saveImplant() {
+    if (!iForm.id || !iForm.target) return
+    if (iModal!.mode === 'add') setImplants(prev => [iForm, ...prev])
+    else setImplants(prev => prev.map((x, i) => i === iModal!.idx ? iForm : x))
+    setIModal(null)
+  }
 
-  const activeCount = ops.filter(o => o.status === 'ACTIVE').length
+  const activeCount    = ops.filter(o => o.status === 'ACTIVE').length
+  const activeImplants = implants.filter(i => i.status === 'ACTIVE').length
 
   return (
     <div className="max-w-5xl mx-auto space-y-5">
       <div className="flex items-start gap-3 bg-red-950/30 border border-red-900/50 rounded-xl px-5 py-3.5">
         <AlertOctagon size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
         <div>
-          <div className="text-red-400 font-mono text-[11px] font-bold tracking-widest">RESTRICTED — TAO ACCESS ONLY</div>
-          <div className="text-red-500/60 font-mono text-[10px] mt-0.5">TAILORED ACCESS OPERATIONS CENTER // TS//SI//TK//NOFORN</div>
+          <div className="text-red-400 font-mono text-[11px] font-bold tracking-widest">RESTRICTED — TAO/CNO ACCESS ONLY</div>
+          <div className="text-red-500/60 font-mono text-[10px] mt-0.5">TAILORED ACCESS OPERATIONS // COMPUTER NETWORK OPERATIONS // TS//SI//TK//NOFORN</div>
         </div>
       </div>
 
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-red-400 tracking-wide">TAO Operations Center</h1>
+          <h1 className="text-lg font-semibold text-red-400 tracking-wide">TAO / CNO Operations Center</h1>
           <p className="text-[12px] text-slate-500 mt-0.5">Operator: <span className="font-mono text-red-400">{user.codename}</span></p>
         </div>
         <div className="flex items-center gap-1.5">
@@ -142,11 +182,12 @@ export const TAO: React.FC<{ user: User }> = ({ user }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-4 gap-3">
         {[
-          { label: 'Active Ops',        value: activeCount.toString(), icon: Zap,    color: 'text-red-400',   border: 'border-red-500/20',   bg: 'bg-red-500/8'   },
-          { label: 'Total Operations',  value: ops.length.toString(),  icon: Globe,  color: 'text-amber-400', border: 'border-amber-500/20', bg: 'bg-amber-500/8' },
-          { label: 'Compromised',       value: ops.filter(o => o.status === 'COMPROMISED').length.toString(), icon: Target, color: 'text-red-400', border: 'border-red-500/20', bg: 'bg-red-500/8' },
+          { label: 'Active Ops',       value: activeCount.toString(),    icon: Zap,      color: 'text-red-400',   border: 'border-red-500/20',   bg: 'bg-red-500/8'   },
+          { label: 'Total Operations', value: ops.length.toString(),     icon: Globe,    color: 'text-amber-400', border: 'border-amber-500/20', bg: 'bg-amber-500/8' },
+          { label: 'Active Implants',  value: activeImplants.toString(), icon: Cpu,      color: 'text-green-400', border: 'border-green-500/20', bg: 'bg-green-500/8' },
+          { label: 'Compromised',      value: ops.filter(o => o.status === 'COMPROMISED').length.toString(), icon: Target, color: 'text-red-400', border: 'border-red-500/20', bg: 'bg-red-500/8' },
         ].map(s => {
           const Icon = s.icon
           return (
@@ -200,6 +241,55 @@ export const TAO: React.FC<{ user: User }> = ({ user }) => {
         </table>
       </div>
 
+      {/* CNO Implants */}
+      <div className="bg-[#0C0F1A] border border-amber-900/30 rounded-xl overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-[#1E2540] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-[12px] font-semibold text-amber-400">CNO Active Implants</span>
+            <div className="flex items-center gap-1.5">
+              <Activity size={11} className="text-green-400 animate-pulse" />
+              <span className="text-[10px] font-mono text-green-400">{activeImplants} ACTIVE</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-mono text-slate-600">{implants.length} RECORDS</span>
+            <AddBtn onClick={() => { setIForm(BLANK_IMP); setIModal({ mode: 'add', idx: -1 }) }} label="Add Implant" />
+          </div>
+        </div>
+        <table className="w-full text-[12px]">
+          <thead>
+            <tr className="border-b border-[#1E2540] bg-[#080B14]">
+              {['Implant ID', 'Target', 'Tool', 'Last Contact', 'Status', ''].map(h => (
+                <th key={h} className="text-left px-5 py-3 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.08em]">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#1A1F35]">
+            {implants.map((imp, i) => (
+              <tr key={i} className="hover:bg-amber-950/10 transition-colors group">
+                <td className="px-5 py-3.5 font-mono font-semibold text-amber-300 text-[11px]">{imp.id}</td>
+                <td className="px-5 py-3.5 text-slate-400 text-[11px]">{imp.target}</td>
+                <td className="px-5 py-3.5 font-mono text-slate-500 text-[10px]">{imp.type}</td>
+                <td className="px-5 py-3.5 font-mono text-slate-500 text-[11px]">{imp.lastContact}</td>
+                <td className="px-5 py-3.5">
+                  <span className={`inline-block border rounded-full px-2.5 py-0.5 text-[10px] font-mono font-bold ${IMP_STYLE[imp.status]}`}>{imp.status}</span>
+                </td>
+                <td className="px-5 py-3.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ActionBtns onEdit={() => { setIForm({ ...imp }); setIModal({ mode: 'edit', idx: i }) }} onDelete={() => setImplants(p => p.filter((_, j) => j !== i))} />
+                </td>
+              </tr>
+            ))}
+            {implants.length === 0 && (
+              <tr><td colSpan={6} className="px-5 py-8 text-center text-[11px] text-slate-600 font-mono">NO IMPLANTS ON RECORD</td></tr>
+            )}
+          </tbody>
+        </table>
+        <div className="border-t border-[#1E2540] px-5 py-2.5 font-mono text-[9px] text-slate-600 flex justify-between">
+          <span>EXFIL: ENCRYPTED TUNNEL // TOR BRIDGE</span>
+          <span>BEACON: 300s</span>
+        </div>
+      </div>
+
       {modal && (
         <Modal title={modal.mode === 'add' ? 'NEW OPERATION' : 'EDIT OPERATION'} onClose={() => setModal(null)} onSave={save}>
           <div className="grid grid-cols-2 gap-4">
@@ -227,6 +317,32 @@ export const TAO: React.FC<{ user: User }> = ({ user }) => {
                 <option value="ACTIVE">ACTIVE</option>
                 <option value="DORMANT">DORMANT</option>
                 <option value="COMPROMISED">COMPROMISED</option>
+              </select>
+            </Field>
+          </div>
+        </Modal>
+      )}
+
+      {iModal && (
+        <Modal title={iModal.mode === 'add' ? 'NEW IMPLANT' : 'EDIT IMPLANT'} onClose={() => setIModal(null)} onSave={saveImplant}>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Implant ID">
+              <input className={inp} value={iForm.id} onChange={ifld('id')} placeholder="IMP-0001" />
+            </Field>
+            <Field label="Target">
+              <input className={inp} value={iForm.target} onChange={ifld('target')} placeholder="Target description" />
+            </Field>
+            <Field label="Tool / Technique">
+              <input className={inp} value={iForm.type} onChange={ifld('type')} placeholder="TURBINE/SECONDDATE" />
+            </Field>
+            <Field label="Last Contact">
+              <input className={inp} value={iForm.lastContact} onChange={ifld('lastContact')} placeholder="2m ago" />
+            </Field>
+            <Field label="Status">
+              <select className={sel} value={iForm.status} onChange={ifld('status')}>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="DORMANT">DORMANT</option>
+                <option value="LOST">LOST</option>
               </select>
             </Field>
           </div>

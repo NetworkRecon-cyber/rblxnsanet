@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { AlertOctagon, Globe, Cpu, Wifi, Activity, Plus, Pencil, Trash2, X, Check } from 'lucide-react'
+import { AlertOctagon, Globe, Wifi, Plus, Pencil, Trash2, X, Check } from 'lucide-react'
 import type { User } from '../data/auth'
 
 // ─── Shared helpers (duplicated to avoid cross-file import complexity) ─────────
@@ -78,14 +78,6 @@ interface CollectionSite {
   since:    string
 }
 
-interface Implant {
-  id:          string
-  target:      string
-  type:        string
-  status:      'ACTIVE' | 'DORMANT' | 'LOST'
-  lastContact: string
-}
-
 // ─── Defaults ────────────────────────────────────────────────────────────────
 
 const DEFAULT_SITES: CollectionSite[] = [
@@ -96,15 +88,6 @@ const DEFAULT_SITES: CollectionSite[] = [
   { id: 'SCS-05', location: 'PYONGYANG, KP', cover: 'Diplomatic support facility',     status: 'BURNED',      dailyVol: '0 GB',  since: '2022-11-30' },
 ]
 
-const DEFAULT_IMPLANTS: Implant[] = [
-  { id: 'IMP-8821', target: 'Kremlin Subnet A',      type: 'TURBINE/SECONDDATE', status: 'ACTIVE',  lastContact: '2m ago'      },
-  { id: 'IMP-4412', target: 'PLA Backbone Node 7',   type: 'FOXACID',            status: 'ACTIVE',  lastContact: '14m ago'     },
-  { id: 'IMP-9033', target: 'IRGC Comms Router',     type: 'QUANTUM INSERT',     status: 'DORMANT', lastContact: '6h ago'      },
-  { id: 'IMP-1105', target: 'NK Telecom Exchange',   type: 'DROPOUT JEEP',       status: 'LOST',    lastContact: '14 days ago' },
-  { id: 'IMP-6677', target: 'SVR C2 Infrastructure', type: 'BYZANTINE HADES',    status: 'ACTIVE',  lastContact: '1m ago'      },
-  { id: 'IMP-2290', target: 'FSB Internal Network',  type: 'TURBINE',            status: 'ACTIVE',  lastContact: '8m ago'      },
-]
-
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const SITE_STYLE: Record<string, string> = {
@@ -113,28 +96,16 @@ const SITE_STYLE: Record<string, string> = {
   BURNED:      'text-red-400   bg-red-950/50   border-red-800/50',
 }
 
-const IMP_STYLE: Record<string, string> = {
-  ACTIVE:  'text-green-400 bg-green-950/50 border-green-800/50',
-  DORMANT: 'text-slate-400 bg-slate-900/50 border-slate-700/50',
-  LOST:    'text-red-400   bg-red-950/50   border-red-800/50',
-}
-
 const BLANK_SITE: CollectionSite = { id: '', location: '', cover: '', status: 'OPERATIONAL', dailyVol: '', since: '' }
-const BLANK_IMP:  Implant         = { id: '', target: '', type: '', status: 'ACTIVE', lastContact: '' }
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export const SCS: React.FC<{ user: User }> = ({ user }) => {
-  const [sites,    setSites]    = useLocalState<CollectionSite[]>('nsanet_scs_sites',    DEFAULT_SITES)
-  const [implants, setImplants] = useLocalState<Implant[]>('nsanet_scs_implants', DEFAULT_IMPLANTS)
-
+  const [sites,  setSites]  = useLocalState<CollectionSite[]>('nsanet_scs_sites', DEFAULT_SITES)
   const [sModal, setSModal] = useState<{ mode: 'add' | 'edit'; idx: number } | null>(null)
   const [sForm,  setSForm]  = useState<CollectionSite>(BLANK_SITE)
-  const [iModal, setIModal] = useState<{ mode: 'add' | 'edit'; idx: number } | null>(null)
-  const [iForm,  setIForm]  = useState<Implant>(BLANK_IMP)
 
   function sfld(k: keyof CollectionSite) { return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setSForm(f => ({ ...f, [k]: e.target.value })) }
-  function ifld(k: keyof Implant)         { return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setIForm(f => ({ ...f, [k]: e.target.value })) }
 
   function saveSite() {
     if (!sForm.id || !sForm.location) return
@@ -142,16 +113,9 @@ export const SCS: React.FC<{ user: User }> = ({ user }) => {
     else setSites(p => p.map((x, i) => i === sModal!.idx ? sForm : x))
     setSModal(null)
   }
-  function saveImplant() {
-    if (!iForm.id || !iForm.target) return
-    if (iModal!.mode === 'add') setImplants(p => [iForm, ...p])
-    else setImplants(p => p.map((x, i) => i === iModal!.idx ? iForm : x))
-    setIModal(null)
-  }
 
-  const activeSites    = sites.filter(s => s.status === 'OPERATIONAL').length
-  const activeImplants = implants.filter(i => i.status === 'ACTIVE').length
-  const totalVol       = sites.filter(s => s.status === 'OPERATIONAL')
+  const activeSites = sites.filter(s => s.status === 'OPERATIONAL').length
+  const totalVol    = sites.filter(s => s.status === 'OPERATIONAL')
     .reduce((a, s) => a + (parseFloat(s.dailyVol) || 0), 0)
 
   return (
@@ -160,25 +124,24 @@ export const SCS: React.FC<{ user: User }> = ({ user }) => {
       <div className="flex items-start gap-3 bg-red-950/30 border border-red-900/50 rounded-xl px-5 py-3.5">
         <AlertOctagon size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
         <div>
-          <div className="text-red-400 font-mono text-[11px] font-bold tracking-widest">RESTRICTED — SCS/CNO ACCESS ONLY</div>
+          <div className="text-red-400 font-mono text-[11px] font-bold tracking-widest">RESTRICTED — SCS ACCESS ONLY</div>
           <div className="text-red-500/60 font-mono text-[10px] mt-0.5">
-            SPECIAL COLLECTION SERVICE // COMPUTER NETWORK OPERATIONS // TS//SI//TK//NOFORN
+            SPECIAL COLLECTION SERVICE // TS//SI//TK//NOFORN
           </div>
         </div>
       </div>
 
       <div>
-        <h1 className="text-lg font-semibold text-slate-100 tracking-wide">SCS / CNO Operations</h1>
+        <h1 className="text-lg font-semibold text-slate-100 tracking-wide">SCS Collection Operations</h1>
         <p className="text-[12px] text-slate-500 mt-0.5">
           Operator: <span className="font-mono text-blue-400">{user.codename}</span>
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {[
-          { label: 'Active Sites',         value: `${activeSites}/${sites.length}`,   icon: Globe, color: 'text-blue-400',  border: 'border-blue-500/20',  bg: 'bg-blue-500/8'  },
-          { label: 'Daily Collection Vol', value: `${totalVol} GB`,                   icon: Wifi,  color: 'text-green-400', border: 'border-green-500/20', bg: 'bg-green-500/8' },
-          { label: 'Active Implants',      value: activeImplants.toString(),           icon: Cpu,   color: 'text-amber-400', border: 'border-amber-500/20', bg: 'bg-amber-500/8' },
+          { label: 'Active Sites',         value: `${activeSites}/${sites.length}`, icon: Globe, color: 'text-blue-400',  border: 'border-blue-500/20',  bg: 'bg-blue-500/8'  },
+          { label: 'Daily Collection Vol', value: `${totalVol} GB`,                 icon: Wifi,  color: 'text-green-400', border: 'border-green-500/20', bg: 'bg-green-500/8' },
         ].map(s => {
           const Icon = s.icon
           return (
@@ -191,99 +154,50 @@ export const SCS: React.FC<{ user: User }> = ({ user }) => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-        {/* SCS Sites */}
-        <div className="bg-[#0C0F1A] border border-blue-900/30 rounded-xl overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-[#1E2540] flex items-center justify-between">
-            <span className="text-[12px] font-semibold text-slate-300">Embassy Collection Sites</span>
-            <div className="flex items-center gap-3">
-              <span className="text-[9px] font-mono font-bold text-blue-400 bg-blue-950/40 border border-blue-800/50 px-2 py-0.5 rounded">SCS</span>
-              <AddBtn onClick={() => { setSForm(BLANK_SITE); setSModal({ mode: 'add', idx: -1 }) }} label="Add Site" />
-            </div>
-          </div>
-          <div className="divide-y divide-[#1A1F35]">
-            {sites.map((site, i) => (
-              <div key={i} className="px-5 py-3 hover:bg-[#111627]/60 transition-colors group">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <Globe size={12} className="text-slate-600" />
-                    <span className="font-mono text-[11px] font-semibold text-slate-100">{site.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`inline-block border rounded-full px-2.5 py-0.5 text-[9px] font-mono font-bold ${SITE_STYLE[site.status]}`}>
-                      {site.status}
-                    </span>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ActionBtns onEdit={() => { setSForm({ ...site }); setSModal({ mode: 'edit', idx: i }) }} onDelete={() => setSites(p => p.filter((_, j) => j !== i))} />
-                    </div>
-                  </div>
-                </div>
-                <div className="text-[10px] text-slate-500 font-mono mb-1">{site.cover}</div>
-                <div className="flex gap-4 font-mono text-[9px] text-slate-600">
-                  <span>ID: {site.id}</span>
-                  <span>VOL: {site.dailyVol}/day</span>
-                  <span>SINCE: {site.since}</span>
-                </div>
-              </div>
-            ))}
-            {sites.length === 0 && <div className="px-5 py-6 text-center text-[11px] text-slate-600 font-mono">NO SITES ON RECORD</div>}
+      {/* SCS Sites */}
+      <div className="bg-[#0C0F1A] border border-blue-900/30 rounded-xl overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-[#1E2540] flex items-center justify-between">
+          <span className="text-[12px] font-semibold text-slate-300">Embassy Collection Sites</span>
+          <div className="flex items-center gap-3">
+            <span className="text-[9px] font-mono font-bold text-blue-400 bg-blue-950/40 border border-blue-800/50 px-2 py-0.5 rounded">SCS</span>
+            <AddBtn onClick={() => { setSForm(BLANK_SITE); setSModal({ mode: 'add', idx: -1 }) }} label="Add Site" />
           </div>
         </div>
-
-        {/* CNO Implants */}
-        <div className="bg-[#0C0F1A] border border-amber-900/30 rounded-xl overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-[#1E2540] flex items-center justify-between">
-            <span className="text-[12px] font-semibold text-slate-300">CNO Active Implants</span>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Activity size={11} className="text-green-400 animate-pulse" />
-                <span className="text-[10px] font-mono text-green-400">{activeImplants} ACTIVE</span>
+        <div className="divide-y divide-[#1A1F35]">
+          {sites.map((site, i) => (
+            <div key={i} className="px-5 py-3 hover:bg-[#111627]/60 transition-colors group">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <Globe size={12} className="text-slate-600" />
+                  <span className="font-mono text-[11px] font-semibold text-slate-100">{site.location}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`inline-block border rounded-full px-2.5 py-0.5 text-[9px] font-mono font-bold ${SITE_STYLE[site.status]}`}>
+                    {site.status}
+                  </span>
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ActionBtns onEdit={() => { setSForm({ ...site }); setSModal({ mode: 'edit', idx: i }) }} onDelete={() => setSites(p => p.filter((_, j) => j !== i))} />
+                  </div>
+                </div>
               </div>
-              <AddBtn onClick={() => { setIForm(BLANK_IMP); setIModal({ mode: 'add', idx: -1 }) }} label="Add Implant" />
+              <div className="text-[10px] text-slate-500 font-mono mb-1">{site.cover}</div>
+              <div className="flex gap-4 font-mono text-[9px] text-slate-600">
+                <span>ID: {site.id}</span>
+                <span>VOL: {site.dailyVol}/day</span>
+                <span>SINCE: {site.since}</span>
+              </div>
             </div>
-          </div>
-          <div className="divide-y divide-[#1A1F35]">
-            {implants.map((imp, i) => (
-              <div key={i} className="px-5 py-3 hover:bg-[#111627]/60 transition-colors group">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <Cpu size={12} className="text-slate-600" />
-                    <span className="font-mono text-[11px] font-semibold text-slate-100">{imp.target}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`inline-block border rounded-full px-2.5 py-0.5 text-[9px] font-mono font-bold ${IMP_STYLE[imp.status]}`}>
-                      {imp.status}
-                    </span>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ActionBtns onEdit={() => { setIForm({ ...imp }); setIModal({ mode: 'edit', idx: i }) }} onDelete={() => setImplants(p => p.filter((_, j) => j !== i))} />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-4 font-mono text-[9px] text-slate-600">
-                  <span>ID: {imp.id}</span>
-                  <span>TYPE: {imp.type}</span>
-                  <span>LAST: {imp.lastContact}</span>
-                </div>
-              </div>
-            ))}
-            {implants.length === 0 && <div className="px-5 py-6 text-center text-[11px] text-slate-600 font-mono">NO IMPLANTS ON RECORD</div>}
-          </div>
-          <div className="border-t border-[#1E2540] px-5 py-2.5 font-mono text-[9px] text-slate-600 flex justify-between">
-            <span>EXFIL: ENCRYPTED TUNNEL // TOR BRIDGE</span>
-            <span>BEACON: 300s</span>
-          </div>
+          ))}
+          {sites.length === 0 && <div className="px-5 py-6 text-center text-[11px] text-slate-600 font-mono">NO SITES ON RECORD</div>}
         </div>
-
       </div>
 
-      {/* Site modal */}
       {sModal && (
         <Modal title={sModal.mode === 'add' ? 'NEW COLLECTION SITE' : 'EDIT SITE'} onClose={() => setSModal(null)} onSave={saveSite}>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Site ID"><input className={inp} value={sForm.id} onChange={sfld('id')} placeholder="SCS-06" /></Field>
             <Field label="Location"><input className={inp} value={sForm.location} onChange={sfld('location')} placeholder="BERLIN, DE" /></Field>
-            <Field label="Cover Identity" ><input className={inp} value={sForm.cover} onChange={sfld('cover')} placeholder="US Embassy — Cultural Affairs" /></Field>
+            <Field label="Cover Identity"><input className={inp} value={sForm.cover} onChange={sfld('cover')} placeholder="US Embassy — Cultural Affairs" /></Field>
             <Field label="Daily Volume"><input className={inp} value={sForm.dailyVol} onChange={sfld('dailyVol')} placeholder="38 GB" /></Field>
             <Field label="Active Since"><input className={inp} value={sForm.since} onChange={sfld('since')} placeholder="2024-01-01" /></Field>
             <Field label="Status">
@@ -291,25 +205,6 @@ export const SCS: React.FC<{ user: User }> = ({ user }) => {
                 <option value="OPERATIONAL">OPERATIONAL</option>
                 <option value="MAINTENANCE">MAINTENANCE</option>
                 <option value="BURNED">BURNED</option>
-              </select>
-            </Field>
-          </div>
-        </Modal>
-      )}
-
-      {/* Implant modal */}
-      {iModal && (
-        <Modal title={iModal.mode === 'add' ? 'NEW IMPLANT' : 'EDIT IMPLANT'} onClose={() => setIModal(null)} onSave={saveImplant}>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Implant ID"><input className={inp} value={iForm.id} onChange={ifld('id')} placeholder="IMP-0001" /></Field>
-            <Field label="Target"><input className={inp} value={iForm.target} onChange={ifld('target')} placeholder="Kremlin Subnet A" /></Field>
-            <Field label="Implant Type"><input className={inp} value={iForm.type} onChange={ifld('type')} placeholder="TURBINE/SECONDDATE" /></Field>
-            <Field label="Last Contact"><input className={inp} value={iForm.lastContact} onChange={ifld('lastContact')} placeholder="2m ago" /></Field>
-            <Field label="Status">
-              <select className={sel} value={iForm.status} onChange={ifld('status')}>
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="DORMANT">DORMANT</option>
-                <option value="LOST">LOST</option>
               </select>
             </Field>
           </div>
