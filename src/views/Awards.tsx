@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Plus, Trash2, Award, Star, Shield, Medal } from 'lucide-react'
+import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import { Modal, Field, Input, Select, showToast } from '../components/UI'
 import type { User } from '../data/auth'
 import { hasPermission } from '../data/auth'
@@ -14,36 +14,147 @@ interface AwardEntry {
 }
 
 type AwardType =
-  | 'Intelligence Commendation Medal'
-  | 'Meritorious Civilian Service Award'
-  | "NSA Director's Award"
+  | 'Cryptologic Achievement Ribbon'
+  | 'Collection Support Ribbon'
+  | 'Duty Performance Ribbon'
+  | 'Technical Proficiency Citation'
+  | 'Signals Lead Commendation'
+  | 'Meritorious Service Commendation'
   | 'SIGINT Excellence Award'
-  | 'Cyber Operations Badge'
-  | 'Distinguished Career Intelligence Medal'
+  | 'Purple Dragon Award'
+  | 'Signals Collection Leadership Citation'
+  | 'ECHELON Distinguished Service Medal'
   | 'National Intelligence Medal'
+  | 'VENONA Citation'
+  | "Director's Award"
 
-const AWARD_META: Record<AwardType, { color: string; icon: React.ComponentType<{ size?: number; className?: string }>; ribbon: string }> = {
-  'Intelligence Commendation Medal':         { color: 'text-blue-400',   icon: Medal,  ribbon: 'bg-gradient-to-r from-blue-900 via-blue-600 to-blue-900'     },
-  'Meritorious Civilian Service Award':      { color: 'text-green-400',  icon: Award,  ribbon: 'bg-gradient-to-r from-green-900 via-green-600 to-green-900'   },
-  "NSA Director's Award":                    { color: 'text-amber-400',  icon: Star,   ribbon: 'bg-gradient-to-r from-amber-900 via-amber-500 to-amber-900'   },
-  'SIGINT Excellence Award':                 { color: 'text-purple-400', icon: Shield, ribbon: 'bg-gradient-to-r from-purple-900 via-purple-600 to-purple-900' },
-  'Cyber Operations Badge':                  { color: 'text-cyan-400',   icon: Shield, ribbon: 'bg-gradient-to-r from-cyan-900 via-cyan-600 to-cyan-900'      },
-  'Distinguished Career Intelligence Medal': { color: 'text-red-400',    icon: Medal,  ribbon: 'bg-gradient-to-r from-red-900 via-red-600 to-red-900'         },
-  'National Intelligence Medal':             { color: 'text-yellow-400', icon: Star,   ribbon: 'bg-gradient-to-r from-yellow-900 via-yellow-500 to-yellow-900' },
+type Tier = 'I' | 'II' | 'III' | 'IV' | 'V'
+
+interface AwardMeta {
+  tier:     Tier
+  sublabel: string
+  note?:    string
+  stripe:   string   // Tailwind bg class for left stripe
+  tierBg:   string   // tier badge bg
+  tierText: string   // tier badge text
+  label:    string   // tier label text
+}
+
+const AWARD_META: Record<AwardType, AwardMeta> = {
+  'Cryptologic Achievement Ribbon': {
+    tier: 'I', sublabel: 'Entry-Level Recognition',
+    stripe: 'bg-slate-500', tierBg: 'bg-slate-800', tierText: 'text-slate-300',
+    label: 'Tier I',
+  },
+  'Collection Support Ribbon': {
+    tier: 'I', sublabel: 'Entry-Level Recognition',
+    stripe: 'bg-slate-500', tierBg: 'bg-slate-800', tierText: 'text-slate-300',
+    label: 'Tier I',
+  },
+  'Duty Performance Ribbon': {
+    tier: 'I', sublabel: 'Entry-Level Recognition',
+    stripe: 'bg-slate-500', tierBg: 'bg-slate-800', tierText: 'text-slate-300',
+    label: 'Tier I',
+  },
+  'Technical Proficiency Citation': {
+    tier: 'I', sublabel: 'Entry-Level Recognition',
+    stripe: 'bg-slate-500', tierBg: 'bg-slate-800', tierText: 'text-slate-300',
+    label: 'Tier I',
+  },
+  'Signals Lead Commendation': {
+    tier: 'II', sublabel: 'Mid-Grade Commendation',
+    stripe: 'bg-blue-500', tierBg: 'bg-blue-950', tierText: 'text-blue-300',
+    label: 'Tier II',
+  },
+  'Meritorious Service Commendation': {
+    tier: 'II', sublabel: 'Mid-Grade Commendation',
+    stripe: 'bg-blue-500', tierBg: 'bg-blue-950', tierText: 'text-blue-300',
+    label: 'Tier II',
+  },
+  'SIGINT Excellence Award': {
+    tier: 'III', sublabel: 'Senior Recognition',
+    stripe: 'bg-sky-400', tierBg: 'bg-sky-950', tierText: 'text-sky-300',
+    label: 'Tier III',
+  },
+  'Purple Dragon Award': {
+    tier: 'III', sublabel: 'Senior Recognition',
+    note: '// Awarded for counterintelligence contributions',
+    stripe: 'bg-sky-400', tierBg: 'bg-sky-950', tierText: 'text-sky-300',
+    label: 'Tier III',
+  },
+  'Signals Collection Leadership Citation': {
+    tier: 'IV', sublabel: 'Distinguished Service',
+    stripe: 'bg-amber-400', tierBg: 'bg-amber-950', tierText: 'text-amber-300',
+    label: 'Tier IV',
+  },
+  'ECHELON Distinguished Service Medal': {
+    tier: 'IV', sublabel: 'Distinguished Service',
+    note: '// Requires TS/SCI + ECI clearance for nomination',
+    stripe: 'bg-amber-400', tierBg: 'bg-amber-950', tierText: 'text-amber-300',
+    label: 'Tier IV',
+  },
+  'National Intelligence Medal': {
+    tier: 'IV', sublabel: 'Distinguished Service',
+    stripe: 'bg-amber-400', tierBg: 'bg-amber-950', tierText: 'text-amber-300',
+    label: 'Tier IV',
+  },
+  'VENONA Citation': {
+    tier: 'V', sublabel: 'Highest Honor',
+    note: '// Classification: TS/SCI/SAP — restricted nomination',
+    stripe: 'bg-red-500', tierBg: 'bg-red-950', tierText: 'text-red-300',
+    label: 'Tier V',
+  },
+  "Director's Award": {
+    tier: 'V', sublabel: 'Highest Honor',
+    note: '// Awarded at sole discretion of the Director, NSA',
+    stripe: 'bg-red-500', tierBg: 'bg-red-950', tierText: 'text-red-300',
+    label: 'Tier V',
+  },
 }
 
 const ALL_AWARD_TYPES = Object.keys(AWARD_META) as AwardType[]
+
+const TIER_ORDER: Tier[] = ['I', 'II', 'III', 'IV', 'V']
+const TIER_LABELS: Record<Tier, string> = {
+  I:   'Entry-Level Recognition',
+  II:  'Mid-Grade Commendation',
+  III: 'Senior Recognition',
+  IV:  'Distinguished Service',
+  V:   'Highest Honor',
+}
+const TIER_STRIPE: Record<Tier, string> = {
+  I:   'bg-slate-500',
+  II:  'bg-blue-500',
+  III: 'bg-sky-400',
+  IV:  'bg-amber-400',
+  V:   'bg-red-500',
+}
+const TIER_TEXT: Record<Tier, string> = {
+  I:   'text-slate-400',
+  II:  'text-blue-400',
+  III: 'text-sky-400',
+  IV:  'text-amber-400',
+  V:   'text-red-400',
+}
+const TIER_BADGE: Record<Tier, string> = {
+  I:   'bg-slate-800 text-slate-300',
+  II:  'bg-blue-950 text-blue-300',
+  III: 'bg-sky-950 text-sky-300',
+  IV:  'bg-amber-950 text-amber-300',
+  V:   'bg-red-950 text-red-300',
+}
+
 function uid()   { return 'AWD-' + Math.random().toString(36).slice(2,9).toUpperCase() }
 function today() { return new Date().toISOString().slice(0,10) }
 
 export default function Awards({ user }: { user: User }) {
-  const [awards,  setAwards]  = useState<AwardEntry[]>([])
-  const [addOpen, setAddOpen] = useState(false)
-  const [delId,   setDelId]   = useState<string | null>(null)
-  const [filter,  setFilter]  = useState<AwardType | 'ALL'>('ALL')
+  const [awards,    setAwards]    = useState<AwardEntry[]>([])
+  const [addOpen,   setAddOpen]   = useState(false)
+  const [delId,     setDelId]     = useState<string | null>(null)
+  const [catalogOpen, setCatalogOpen] = useState(true)
 
   const [fRecipient, setFRecipient] = useState('')
-  const [fAward,     setFAward]     = useState<AwardType>('Intelligence Commendation Medal')
+  const [fAward,     setFAward]     = useState<AwardType>('Cryptologic Achievement Ribbon')
   const [fCitation,  setFCitation]  = useState('')
   const [fDate,      setFDate]      = useState(today())
   const [fGranted,   setFGranted]   = useState(user.codename)
@@ -60,7 +171,7 @@ export default function Awards({ user }: { user: User }) {
     }, ...prev])
     setAddOpen(false)
     setFRecipient(''); setFCitation(''); setFDate(today())
-    setFAward('Intelligence Commendation Medal'); setFGranted(user.codename)
+    setFAward('Cryptologic Achievement Ribbon'); setFGranted(user.codename)
     showToast('Award recorded')
   }
 
@@ -71,9 +182,8 @@ export default function Awards({ user }: { user: User }) {
     showToast('Award removed')
   }
 
-  const filtered = filter === 'ALL' ? awards : awards.filter(a => a.award === filter)
-
-  const byRecipient = filtered.reduce<Record<string, AwardEntry[]>>((acc, a) => {
+  // Group granted awards by recipient
+  const byRecipient = awards.reduce<Record<string, AwardEntry[]>>((acc, a) => {
     if (!acc[a.recipient]) acc[a.recipient] = []
     acc[a.recipient].push(a)
     return acc
@@ -102,74 +212,137 @@ export default function Awards({ user }: { user: User }) {
         </div>
       </div>
 
-      {/* Category filter */}
-      <div className="flex gap-1.5 flex-wrap">
-        {(['ALL', ...ALL_AWARD_TYPES] as Array<AwardType | 'ALL'>).map(t => (
-          <button key={t} onClick={() => setFilter(t)}
-            className={`px-2.5 py-1 rounded text-[10px] font-semibold uppercase tracking-[0.05em] border transition-all cursor-pointer
-              ${filter === t
-                ? 'bg-blue-600 border-blue-500 text-white'
-                : 'bg-transparent border-[#28304E] text-slate-400 hover:border-slate-500 hover:text-slate-200'
-              }`}>
-            {t === 'ALL' ? 'All Awards' : t}
-          </button>
-        ))}
+      {/* Award Catalog */}
+      <div className="bg-[#0C0F1A] border border-[#1E2540] rounded-xl overflow-hidden">
+        <button
+          onClick={() => setCatalogOpen(v => !v)}
+          className="w-full flex items-center justify-between px-5 py-3.5 border-b border-[#1E2540]
+            hover:bg-[#111627]/40 transition-colors cursor-pointer bg-transparent text-left">
+          <span className="text-[12px] font-semibold text-slate-300 tracking-wide">Award Catalog</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-slate-600">13 AWARDS · 5 TIERS</span>
+            {catalogOpen
+              ? <ChevronUp size={13} className="text-slate-600" />
+              : <ChevronDown size={13} className="text-slate-600" />
+            }
+          </div>
+        </button>
+
+        {catalogOpen && (
+          <div className="divide-y divide-[#1A1F35]">
+            {TIER_ORDER.map(tier => {
+              const tierAwards = ALL_AWARD_TYPES.filter(a => AWARD_META[a].tier === tier)
+              return (
+                <div key={tier}>
+                  {/* Tier header */}
+                  <div className="flex items-center gap-3 px-5 py-2.5 bg-[#080B14]">
+                    <div className={`w-0.5 h-4 rounded-full ${TIER_STRIPE[tier]}`} />
+                    <span className={`text-[10px] font-bold font-mono uppercase tracking-[0.1em] ${TIER_TEXT[tier]}`}>
+                      Tier {tier}
+                    </span>
+                    <span className="text-[10px] text-slate-600 font-mono">— {TIER_LABELS[tier]}</span>
+                  </div>
+                  {/* Awards in tier */}
+                  {tierAwards.map(awardName => {
+                    const meta = AWARD_META[awardName]
+                    return (
+                      <div key={awardName}
+                        className="flex items-stretch hover:bg-[#111627]/40 transition-colors">
+                        {/* Colored left stripe */}
+                        <div className={`w-1 flex-shrink-0 ${meta.stripe}`} />
+                        <div className="flex-1 px-5 py-4">
+                          <div className="flex items-start gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap mb-1">
+                                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${TIER_BADGE[tier]}`}>
+                                  {meta.label}
+                                </span>
+                              </div>
+                              <div className={`text-[14px] font-semibold tracking-wide ${TIER_TEXT[tier]}`}>
+                                {awardName}
+                              </div>
+                              <div className="text-[11px] text-slate-500 mt-0.5 font-mono">{meta.sublabel}</div>
+                              {meta.note && (
+                                <div className="text-[10px] text-slate-700 font-mono mt-1.5 italic">{meta.note}</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Awards list */}
-      {filtered.length === 0 && (
-        <div className="text-center py-16 font-mono text-[11px] text-slate-600">
-          NO AWARDS ON RECORD{filter !== 'ALL' ? ' FOR THIS CATEGORY' : ''}
+      {/* Active Awards */}
+      <div className="bg-[#0C0F1A] border border-[#1E2540] rounded-xl overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-[#1E2540] flex items-center justify-between">
+          <span className="text-[12px] font-semibold text-slate-300 tracking-wide">Active Awards</span>
+          <span className="text-[10px] font-mono text-slate-600">{awards.length} GRANTED</span>
         </div>
-      )}
 
-      {Object.entries(byRecipient).map(([recipient, recipientAwards]) => (
-        <div key={recipient}>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-6 h-6 rounded-full bg-[#111627] border border-[#28304E]
-              flex items-center justify-center text-[9px] font-bold text-blue-400">
-              {recipient[0]}
-            </div>
-            <span className="font-mono text-[12px] font-bold text-slate-200">{recipient}</span>
-            <span className="font-mono text-[10px] text-slate-600">
-              — {recipientAwards.length} AWARD{recipientAwards.length !== 1 ? 'S' : ''}
-            </span>
+        {awards.length === 0 && (
+          <div className="px-5 py-12 text-center font-mono text-[11px] text-slate-700">
+            NO AWARDS ON RECORD
           </div>
+        )}
 
-          <div className="grid grid-cols-1 gap-2 pl-8">
+        {Object.entries(byRecipient).map(([recipient, recipientAwards]) => (
+          <div key={recipient}>
+            {/* Recipient header */}
+            <div className="px-5 py-2.5 bg-[#080B14] border-b border-[#1A1F35] flex items-center gap-2">
+              <div className="w-5 h-5 rounded-full bg-[#111627] border border-[#28304E]
+                flex items-center justify-center text-[9px] font-bold text-blue-400">
+                {recipient[0]}
+              </div>
+              <span className="font-mono text-[11px] font-bold text-slate-200 tracking-wide">{recipient}</span>
+              <span className="font-mono text-[10px] text-slate-600 ml-1">
+                {recipientAwards.length} AWARD{recipientAwards.length !== 1 ? 'S' : ''}
+              </span>
+            </div>
+
             {recipientAwards.map(award => {
-              const meta = AWARD_META[award.award] ?? AWARD_META['Intelligence Commendation Medal']
-              const Icon = meta.icon
+              const meta = AWARD_META[award.award]
+              const tier = meta?.tier ?? 'I'
               return (
                 <div key={award.id}
-                  className="bg-[#0C0F1A] border border-[#1E2540] rounded-xl overflow-hidden hover:border-[#28304E] transition-colors">
-                  <div className={`h-1 w-full ${meta.ribbon}`} />
-                  <div className="flex items-start gap-3 px-4 py-3">
-                    <div className="mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#111627] border border-[#1E2540]">
-                      <Icon size={14} className={meta.color} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className={`font-bold text-[12px] ${meta.color}`}>{award.award}</div>
-                      <p className="text-[11px] text-slate-400 mt-1 leading-relaxed italic">"{award.citation}"</p>
-                      <div className="flex gap-4 mt-2 font-mono text-[9px] text-slate-600">
-                        <span>GRANTED: <span className="text-slate-400">{award.date}</span></span>
-                        <span>BY: <span className="text-slate-400">{award.grantedBy}</span></span>
-                        <span className="text-slate-700">{award.id}</span>
+                  className="flex items-stretch hover:bg-[#111627]/40 transition-colors border-b border-[#1A1F35] last:border-b-0 group">
+                  <div className={`w-1 flex-shrink-0 ${TIER_STRIPE[tier]}`} />
+                  <div className="flex-1 px-5 py-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${TIER_BADGE[tier]}`}>
+                            {meta?.label ?? 'Tier I'}
+                          </span>
+                        </div>
+                        <div className={`text-[13px] font-semibold ${TIER_TEXT[tier]}`}>{award.award}</div>
+                        <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed italic">"{award.citation}"</p>
+                        <div className="flex gap-4 mt-2 font-mono text-[9px] text-slate-600">
+                          <span>GRANTED <span className="text-slate-500">{award.date}</span></span>
+                          <span>BY <span className="text-slate-500">{award.grantedBy}</span></span>
+                          <span className="text-slate-700">{award.id}</span>
+                        </div>
                       </div>
+                      {canEdit && (
+                        <button onClick={() => setDelId(award.id)}
+                          className="opacity-0 group-hover:opacity-100 text-slate-700 hover:text-red-400
+                            transition-all cursor-pointer flex-shrink-0 mt-0.5 bg-transparent border-none p-0">
+                          <Trash2 size={13} />
+                        </button>
+                      )}
                     </div>
-                    {canEdit && (
-                      <button onClick={() => setDelId(award.id)}
-                        className="text-slate-700 hover:text-red-400 transition-colors cursor-pointer mt-0.5 flex-shrink-0 bg-transparent border-none p-0">
-                        <Trash2 size={13} />
-                      </button>
-                    )}
                   </div>
                 </div>
               )
             })}
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
       {/* Grant Award modal */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Grant Award">
@@ -179,7 +352,14 @@ export default function Awards({ user }: { user: User }) {
           </Field>
           <Field label="Award">
             <Select value={fAward} onChange={e => setFAward(e.target.value as AwardType)}>
-              {ALL_AWARD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              {TIER_ORDER.map(tier => {
+                const tierAwards = ALL_AWARD_TYPES.filter(a => AWARD_META[a].tier === tier)
+                return (
+                  <optgroup key={tier} label={`── Tier ${tier}: ${TIER_LABELS[tier]}`}>
+                    {tierAwards.map(t => <option key={t} value={t}>{t}</option>)}
+                  </optgroup>
+                )
+              })}
             </Select>
           </Field>
           <Field label="Citation">
