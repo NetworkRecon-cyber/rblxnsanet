@@ -3,6 +3,7 @@ import { Search, Download, Trash2, ShieldOff, FileText, Upload } from 'lucide-re
 import { showToast } from '../components/UI'
 import { hasPermission } from '../data/auth'
 import type { User } from '../data/auth'
+import { logFeedEvent } from '../data/feed'
 
 interface FileVaultProps { user: User }
 
@@ -54,6 +55,8 @@ export default function FileVault({ user }: FileVaultProps) {
 
   function handleDelete(id: string) {
     if (!hasPermission(user, 'fileDelete')) { showToast('ACCESS DENIED — insufficient clearance'); return }
+    const f = files.find(x => x.id === id)
+    if (f) logFeedEvent(`${user.codename} deleted VAULT file: ${f.name}`, 'VAULT')
     setFiles(prev => prev.filter(f => f.id !== id))
     showToast('File deleted')
   }
@@ -118,7 +121,7 @@ export default function FileVault({ user }: FileVaultProps) {
                 <td className="px-5 py-3.5 text-slate-400 font-mono text-[11px]">{f.uploader}</td>
                 <td className="px-5 py-3.5">
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => showToast('Download not available in demo')}
+                    <button onClick={() => { logFeedEvent(`${user.codename} accessed VAULT file: ${f.name}`, 'VAULT'); showToast('Download not available in demo') }}
                       className="p-1.5 rounded border border-[#1E2540] text-slate-500
                         hover:border-blue-500/50 hover:text-blue-400 transition-all
                         bg-transparent cursor-pointer">

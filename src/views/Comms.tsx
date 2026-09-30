@@ -3,6 +3,7 @@ import { Send, Plus, Lock } from 'lucide-react'
 import { Modal, Field, Input, Select, Textarea, showToast } from '../components/UI'
 import { hasPermission } from '../data/auth'
 import type { User } from '../data/auth'
+import { logFeedEvent } from '../data/feed'
 
 interface CommsProps { user: User }
 
@@ -35,6 +36,7 @@ export default function Comms({ user }: CommsProps) {
 
   function handleSend() {
     if (!to.trim() || !subject.trim()) { showToast('Recipient and subject required.'); return }
+    logFeedEvent(`${user.codename} → ${to.trim().toUpperCase()}: ${subject.trim()}`, 'COMMS')
     showToast('Message sent — encrypted')
     setModalOpen(false); setTo(''); setSubject(''); setBody('')
   }

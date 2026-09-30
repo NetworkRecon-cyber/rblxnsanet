@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { Users, Briefcase, AlertTriangle, Activity, Server, Database, Radio, Lock, Plus, X } from 'lucide-react'
 import type { User } from '../data/auth'
 import { supabase } from '../data/supabase'
+import { fetchFeed, deleteFeedEvent, insertFeedEvent } from '../data/feed'
+import type { FeedEvent, FeedTag, FeedDot } from '../data/feed'
 
 interface OverviewProps {
   user: User
@@ -9,30 +11,8 @@ interface OverviewProps {
   staffData?: unknown[]
 }
 
-// ── localStorage feed ─────────────────────────────────────────────────────────
-
-interface FeedEntry {
-  time: string
-  dot:  'blue' | 'amber' | 'red' | 'green'
-  text: string
-  tag:  'AUTH' | 'VAULT' | 'ALERT' | 'COMMS'
-}
-
-const SEED_FEED: FeedEntry[] = [
-  { time: '14:32:07Z', dot: 'blue',  text: 'RAVEN authenticated from SCIF-7 terminal',       tag: 'AUTH'  },
-  { time: '14:28:54Z', dot: 'amber', text: 'WRAITH accessed BYZANTINE_HADES_BRIEF.pdf',       tag: 'VAULT' },
-  { time: '14:19:11Z', dot: 'red',   text: 'Anomalous traffic detected — QUANTUM node 4',     tag: 'ALERT' },
-  { time: '14:07:33Z', dot: 'green', text: 'SPECTER sent encrypted message to DIRECTOR',      tag: 'COMMS' },
-  { time: '13:55:02Z', dot: 'blue',  text: 'CIPHER uploaded SIGINT_REPORT_Q3.pdf [TS//SCI]', tag: 'VAULT' },
-  { time: '13:41:18Z', dot: 'blue',  text: 'ORACLE authenticated from mobile terminal',       tag: 'AUTH'  },
-]
-
-function loadFeed(): FeedEntry[] {
-  try { const s = localStorage.getItem('nsanet_feed'); return s ? JSON.parse(s) : SEED_FEED } catch { return SEED_FEED }
-}
-function saveFeed(f: FeedEntry[]) {
-  try { localStorage.setItem('nsanet_feed', JSON.stringify(f)) } catch {}
-}
+// types re-exported from feed.ts for local use
+type FeedEntry = FeedEvent
 
 // ── counters stored in localStorage ──────────────────────────────────────────
 
@@ -59,17 +39,36 @@ const TAG_COLOR: Record<string, string> = {
   COMMS: 'text-green-400 bg-green-500/10 border-green-500/20',
 }
 
+const BLANK_ENTRY = { time: '', dot: 'blue' as FeedDot, text: '', tag: 'AUTH' as FeedTag }
+
 const inp = 'bg-[#111627] border border-[#28304E] rounded px-2 py-1 text-slate-100 text-[11px] outline-none focus:border-blue-500 font-mono'
 const sel = inp + ' cursor-pointer'
 
 // ── component ─────────────────────────────────────────────────────────────────
 
 export default function Overview({ user, accounts = [] }: OverviewProps) {
-  const [feed,      setFeed]      = useState<FeedEntry[]>(loadFeed)
-  const [counters,  setCounters]  = useState(loadCounters)
+  const [feed,       setFeed]       = useState<FeedEntry[]>([])
+  const [feedLoading, setFeedLoading] = useState(true)
+  const [counters,   setCounters]   = useState(loadCounters)
   const [dbSessions, setDbSessions] = useState<number | null>(null)
-  const [addOpen,   setAddOpen]   = useState(false)
-  const [newEntry,  setNewEntry]  = useState<FeedEntry>({ time: '', dot: 'blue', text: '', tag: 'AUTH' })
+  const [addOpen,    setAddOpen]    = useState(false)
+  const [newEntry,   setNewEntry]   = useState(BLANK_ENTRY)
+
+  // ── initial feed load ──
+  useEffect(() => {
+    fetchFeed(20).then(rows => { setFeed(rows); setFeedLoading(false) })
+  }, [])
+
+  // ── realtime subscription ──
+  useEffect(() => {
+    const channel = supabase
+      .channel('feed-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'feed' }, () => {
+        fetchFeed(20).then(setFeed)
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [])
 
   // ── pull live session count from Supabase ──
   useEffect(() => {
@@ -86,21 +85,20 @@ export default function Overview({ user, accounts = [] }: OverviewProps) {
     })
   }
 
-  function addFeedEntry() {
+  async function addFeedEntry() {
     if (!newEntry.text.trim()) return
-    const entry: FeedEntry = {
+    const entry = {
       ...newEntry,
-      time: newEntry.time || new Date().toISOString().replace('T', ' ').slice(11, 19) + 'Z',
+      time: newEntry.time || new Date().toISOString().slice(11, 19) + 'Z',
     }
-    const next = [entry, ...feed].slice(0, 20)
-    setFeed(next); saveFeed(next)
+    await insertFeedEvent(entry)
     setAddOpen(false)
-    setNewEntry({ time: '', dot: 'blue', text: '', tag: 'AUTH' })
+    setNewEntry(BLANK_ENTRY)
   }
 
-  function deleteFeedEntry(i: number) {
-    const next = feed.filter((_, j) => j !== i)
-    setFeed(next); saveFeed(next)
+  async function handleDeleteFeed(id: number | undefined) {
+    if (!id) return
+    await deleteFeedEvent(id)
   }
 
   // ── derived stats ──
@@ -192,7 +190,10 @@ export default function Overview({ user, accounts = [] }: OverviewProps) {
           )}
 
           <div className="divide-y divide-[#1A1F35]">
-            {feed.map((row, i) => (
+            {feedLoading && (
+              <div className="px-5 py-6 text-center text-[11px] text-slate-600 font-mono animate-pulse">LOADING FEED…</div>
+            )}
+            {!feedLoading && feed.map((row, i) => (
               <div key={i} className="flex items-center gap-3 px-5 py-3 hover:bg-[#111627]/50 transition-colors group">
                 <span className="font-mono text-[10px] text-slate-600 w-16 flex-shrink-0">{row.time}</span>
                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${DOT[row.dot]}`} />
@@ -201,13 +202,13 @@ export default function Overview({ user, accounts = [] }: OverviewProps) {
                   ${TAG_COLOR[row.tag] ?? 'text-slate-500 bg-slate-800 border-slate-700'}`}>
                   {row.tag}
                 </span>
-                <button onClick={() => deleteFeedEntry(i)}
+                <button onClick={() => handleDeleteFeed(row.id)}
                   className="opacity-0 group-hover:opacity-100 text-slate-700 hover:text-red-400 bg-transparent border-none cursor-pointer transition-opacity p-0">
                   <X size={11} />
                 </button>
               </div>
             ))}
-            {feed.length === 0 && (
+            {!feedLoading && feed.length === 0 && (
               <div className="px-5 py-6 text-center text-[11px] text-slate-600 font-mono">NO ACTIVITY ON RECORD</div>
             )}
           </div>

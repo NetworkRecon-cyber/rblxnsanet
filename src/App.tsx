@@ -16,6 +16,7 @@ import { TAO, Analytics } from './views/Restricted'
 import { SCS }   from './views/SCS'
 import { hasPermission, GO_ROUTES, USERS } from './data/auth'
 import { loadUsers } from './data/users'
+import { logFeedEvent } from './data/feed'
 // Railway backend removed — auth handled by Supabase
 import type { User, GoRoute } from './data/auth'
 
@@ -105,6 +106,7 @@ export default function App() {
     sessionStorage.setItem('nsanet_user', JSON.stringify(loggedUser))
     sessionStorage.setItem('nsanet_sid', sid)
     setUser(loggedUser); setSessionId(sid)
+    logFeedEvent(`Agent ${loggedUser.codename} authenticated — session ${sid.slice(0,8)}`, 'AUTH')
     setPhase('boot'); setBootLines([]); setBootPct(0)
     let idx = 0
     function next() {

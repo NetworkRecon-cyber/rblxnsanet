@@ -4,6 +4,7 @@ import { Modal, Field, Input, Select, showToast } from '../components/UI'
 import { hasPermission, USERS } from '../data/auth'
 import { supabase } from '../data/supabase'
 import { loadUsers } from '../data/users'
+import { logFeedEvent } from '../data/feed'
 import type { User } from '../data/auth'
 
 interface AccountsProps {
@@ -102,6 +103,7 @@ export default function Accounts({ user, accounts, setAccounts }: AccountsProps)
         status:    'active',
       })
       if (error) throw error
+      logFeedEvent(`${user.codename} created account: ${newCodename.trim().toUpperCase()} [${newRole}/${newClearance}]`, 'AUTH')
       showToast('Account created — ' + newCodename.toUpperCase())
       setCreateOpen(false)
       setNewCodename(''); setNewPass(''); setNewRole('analyst')
