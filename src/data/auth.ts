@@ -84,7 +84,6 @@ export const GO_ROUTES: Record<string, GoRoute> = {
   comms:     { pane: 'chat',       label: 'NSANET://comms',      restricted: false },
   vault:     { pane: 'files',      label: 'NSANET://vault',      restricted: false },
   accounts:  { pane: 'accounts',   label: 'NSANET://accounts',   restricted: false },
-  ant:       { pane: 'ant',        label: 'NSANET://ant',        restricted: false },
   awards:    { pane: 'awards',     label: 'NSANET://awards',     restricted: false },
   tao:       { pane: 'tao',        label: 'NSANET://tao',        restricted: true  },
   ant:       { pane: 'ant',        label: 'NSANET://ant',        restricted: true  },
