@@ -31,6 +31,8 @@ export default function Accounts({ user, accounts, setAccounts }: AccountsProps)
   const [editRole,      setEditRole]      = useState('')
   const [editClearance, setEditClearance] = useState('')
   const [editStatus,    setEditStatus]    = useState('')
+  const [editDept,      setEditDept]      = useState('')
+  const [editRank,      setEditRank]      = useState('')
 
   // Create state
   const [newCodename,   setNewCodename]   = useState('')
@@ -62,13 +64,15 @@ export default function Accounts({ user, accounts, setAccounts }: AccountsProps)
 
   const canCreate = hasPermission(user, 'acctCreate')
   const canEdit   = hasPermission(user, 'acctEdit')
-  const list      = accounts.length > 0 ? accounts : USERS
+  const list      = accounts
 
   function openEdit(u: User) {
     setEditTarget(u)
     setEditRole(u.role)
     setEditClearance(u.clearance ?? '')
     setEditStatus(u.status ?? 'active')
+    setEditDept(u.dept ?? '')
+    setEditRank(u.rank ?? '')
   }
 
   async function handleSave() {
@@ -76,9 +80,16 @@ export default function Accounts({ user, accounts, setAccounts }: AccountsProps)
     try {
       const { error } = await supabase
         .from('users')
-        .update({ role: editRole, clearance: editClearance, status: editStatus })
+        .update({
+          role:      editRole,
+          clearance: editClearance,
+          status:    editStatus,
+          dept:      editDept.trim() || null,
+          rank:      editRank.trim() || null,
+        })
         .eq('codename', editTarget.codename)
       if (error) throw error
+      logFeedEvent(`${user.codename} updated account: ${editTarget.codename} [${editRole}/${editClearance}/${editStatus}]`, 'AUTH')
       showToast('Account updated')
       setEditTarget(null)
       refresh()
@@ -211,6 +222,14 @@ export default function Accounts({ user, accounts, setAccounts }: AccountsProps)
                 <option value="suspend">Suspended</option>
                 <option value="revoked">Revoked</option>
               </Select>
+            </Field>
+            <Field label="Department">
+              <Input value={editDept} onChange={e => setEditDept(e.target.value)}
+                placeholder="e.g. SIGINT, TAO, SCS" />
+            </Field>
+            <Field label="Rank / Title">
+              <Input value={editRank} onChange={e => setEditRank(e.target.value)}
+                placeholder="e.g. Intelligence Analyst" />
             </Field>
             <div className="flex justify-end gap-2 pt-2">
               <button onClick={() => setEditTarget(null)}
