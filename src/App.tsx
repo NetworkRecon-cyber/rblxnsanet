@@ -15,6 +15,7 @@ import Awards    from './views/Awards'
 import { TAO, Analytics } from './views/Restricted'
 import { SCS }   from './views/SCS'
 import { hasPermission, GO_ROUTES, USERS } from './data/auth'
+import { loadUsers } from './data/users'
 // Railway backend removed — auth handled by Supabase
 import type { User, GoRoute } from './data/auth'
 
@@ -70,6 +71,11 @@ export default function App() {
 
   const [bootLines, setBootLines] = useState<string[]>([])
   const [bootPct,   setBootPct]   = useState(0)
+
+  // ── Prefetch accounts ──
+  useEffect(() => {
+    loadUsers().then(setAccounts).catch(() => {})
+  }, [])
 
   // ── Restore session ──
   useEffect(() => {
