@@ -115,33 +115,84 @@ export const TAO: React.FC<{ user: User }> = ({ user }) => (
   </div>
 )
 
-// ─── Analytics ────────────────────────────────────────────────────────────────
+// ─── SSO — Special Source Operations ─────────────────────────────────────────
 
-const THREAT_METRICS = [
-  { label: 'NATION-STATE',   count: 12, pct: 80 },
-  { label: 'RANSOMWARE',     count: 7,  pct: 47 },
-  { label: 'INSIDER THREAT', count: 3,  pct: 20 },
-  { label: 'ZERO-DAY',       count: 2,  pct: 13 },
+interface Provider {
+  codename:    string
+  program:     string
+  company:     string
+  status:      'ACTIVE' | 'DEGRADED' | 'OFFLINE'
+  dailyVol:    string
+  selectors:   string
+  established: string
+}
+
+const PROVIDERS: Provider[] = [
+  { codename: 'PRISM',      program: 'US-984XN', company: 'Major US Internet Providers', status: 'ACTIVE',   dailyVol: '1.9M',  selectors: '94,871',  established: '2007-09-11' },
+  { codename: 'OAKSTAR',    program: 'DS-300',   company: 'Upstream Telecom Partners',   status: 'ACTIVE',   dailyVol: '3.1M',  selectors: '182,440', established: '2004-03-02' },
+  { codename: 'STORMBREW',  program: 'DS-200B',  company: 'US Backbone Carriers',        status: 'ACTIVE',   dailyVol: '2.4M',  selectors: '71,203',  established: '2006-01-14' },
+  { codename: 'BLARNEY',    program: 'DS-200A',  company: 'AT&T / Peering Points',       status: 'DEGRADED', dailyVol: '0.6M',  selectors: '38,009',  established: '1978-10-25' },
+  { codename: 'FAIRVIEW',   program: 'DS-200C',  company: 'AT&T Global Backbone',        status: 'ACTIVE',   dailyVol: '4.7M',  selectors: '214,550', established: '1985-07-09' },
+  { codename: 'LITHIUM',    program: 'DS-302',   company: 'Foreign Tier-1 Partner',      status: 'OFFLINE',  dailyVol: '—',     selectors: '—',       established: '2010-05-03' },
 ]
 
+interface CollectionRecord {
+  uid:         string
+  ip:          string
+  geo:         string
+  provider:    string
+  fingerprint: string
+  accounts:    string[]
+  token:       string
+  ts:          string
+}
+
+const RECORDS: CollectionRecord[] = [
+  { uid: 'SSO-0041', ip: '91.108.4.XXX',  geo: 'Moscow, RU',       provider: 'STORMBREW', fingerprint: 'Chrome/Win10/x64',   accounts: ['Telegram', 'VK', 'ProtonMail'], token: 'eyJ...7fQx', ts: '2024-03-14 02:17:43Z' },
+  { uid: 'SSO-0042', ip: '185.220.101.XX',geo: 'Frankfurt, DE',     provider: 'OAKSTAR',   fingerprint: 'Firefox/Linux/x64',  accounts: ['Signal', 'ProtonMail'],         token: 'eyJ...kR9m', ts: '2024-03-14 03:44:11Z' },
+  { uid: 'SSO-0043', ip: '5.188.62.XXX',  geo: 'Beijing, CN',       provider: 'FAIRVIEW',  fingerprint: 'Chrome/Win11/x64',   accounts: ['WeChat', 'Weibo', 'QQ'],        token: 'eyJ...pL2w', ts: '2024-03-14 06:02:58Z' },
+  { uid: 'SSO-0044', ip: '37.19.221.XX',  geo: 'Tehran, IR',        provider: 'BLARNEY',   fingerprint: 'Tor Browser/Win10',  accounts: ['Telegram'],                     token: 'eyJ...nX4c', ts: '2024-03-14 07:31:22Z' },
+  { uid: 'SSO-0045', ip: '194.165.16.XX', geo: 'Pyongyang, KP',     provider: 'STORMBREW', fingerprint: 'IE11/WinXP/x86',    accounts: ['—'],                            token: 'eyJ...mQ8s', ts: '2024-03-14 09:15:04Z' },
+  { uid: 'SSO-0046', ip: '46.183.220.XX', geo: 'Minsk, BY',         provider: 'OAKSTAR',   fingerprint: 'Chrome/Android/ARM', accounts: ['Telegram', 'VK'],               token: 'eyJ...rT6p', ts: '2024-03-14 11:49:37Z' },
+]
+
+const PROVIDER_STATUS_STYLE: Record<string, string> = {
+  ACTIVE:   'text-green-400 bg-green-950/50 border-green-800/50',
+  DEGRADED: 'text-amber-400 bg-amber-950/50 border-amber-800/50',
+  OFFLINE:  'text-slate-500 bg-slate-900/50 border-slate-700/50',
+}
+
 export const Analytics: React.FC<{ user: User }> = ({ user }) => (
-  <div className="max-w-5xl mx-auto space-y-5">
+  <div className="max-w-6xl mx-auto space-y-5">
+
+    {/* Restricted banner */}
+    <div className="flex items-start gap-3 bg-violet-950/30 border border-violet-900/50 rounded-xl px-5 py-3.5">
+      <AlertOctagon size={16} className="text-violet-400 flex-shrink-0 mt-0.5" />
+      <div>
+        <div className="text-violet-400 font-mono text-[11px] font-bold tracking-widest">RESTRICTED — SSO ACCESS ONLY</div>
+        <div className="text-violet-500/60 font-mono text-[10px] mt-0.5">SPECIAL SOURCE OPERATIONS // TS//SI//ORCON/NOFORN — OAKSTAR/PRISM COMPARTMENT</div>
+      </div>
+    </div>
 
     {/* Header */}
-    <div>
-      <h1 className="text-lg font-semibold text-slate-100 tracking-wide">SIGINT Analytics</h1>
-      <p className="text-[12px] text-slate-500 mt-0.5">
-        Collection statistics — Operator: <span className="font-mono text-blue-400">{user.codename}</span>
-      </p>
+    <div className="flex items-end justify-between">
+      <div>
+        <h1 className="text-lg font-semibold text-violet-400 tracking-wide">Special Source Operations</h1>
+        <p className="text-[12px] text-slate-500 mt-0.5">Upstream collection dashboard — Operator: <span className="font-mono text-violet-400">{user.codename}</span></p>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+        <span className="text-[10px] font-mono text-violet-500">LIVE FEED</span>
+      </div>
     </div>
 
     {/* Stat cards */}
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {[
-        { label: 'Daily Intercepts',      value: '4.2M',   icon: Radio,       color: 'text-blue-400',   border: 'border-blue-500/20',   bg: 'bg-blue-500/8'   },
-        { label: 'Processed',             value: '1.8M',   icon: BarChart2,   color: 'text-green-400',  border: 'border-green-500/20',  bg: 'bg-green-500/8'  },
-        { label: 'Flagged for Review',    value: '47,221', icon: AlertOctagon,color: 'text-amber-400',  border: 'border-amber-500/20',  bg: 'bg-amber-500/8'  },
-        { label: 'Active Collection Pts', value: '8,943',  icon: TrendingUp,  color: 'text-purple-400', border: 'border-purple-500/20', bg: 'bg-purple-500/8' },
+        { label: 'Daily Intercepts',     value: '12.7M', icon: Radio,        color: 'text-violet-400', border: 'border-violet-500/20', bg: 'bg-violet-500/8' },
+        { label: 'Active Providers',     value: '4 / 6', icon: Globe,        color: 'text-green-400',  border: 'border-green-500/20',  bg: 'bg-green-500/8'  },
+        { label: 'Selectors On-Target',  value: '601K',  icon: TrendingUp,   color: 'text-blue-400',   border: 'border-blue-500/20',   bg: 'bg-blue-500/8'   },
+        { label: 'Flagged for Analysis', value: '8,442', icon: AlertOctagon, color: 'text-amber-400',  border: 'border-amber-500/20',  bg: 'bg-amber-500/8'  },
       ].map(s => {
         const Icon = s.icon
         return (
@@ -154,68 +205,78 @@ export const Analytics: React.FC<{ user: User }> = ({ user }) => (
       })}
     </div>
 
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-      {/* Collection rate */}
-      <div className="bg-[#0C0F1A] border border-[#1E2540] rounded-xl overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-[#1E2540]">
-          <span className="text-[12px] font-semibold text-slate-300">Collection Rate — 7-Day</span>
-        </div>
-        <div className="p-5 space-y-3">
-          {[
-            { day: 'MON', rate: 87 },
-            { day: 'TUE', rate: 92 },
-            { day: 'WED', rate: 78 },
-            { day: 'THU', rate: 95 },
-            { day: 'FRI', rate: 88 },
-            { day: 'SAT', rate: 61 },
-            { day: 'SUN', rate: 70 },
-          ].map(d => (
-            <div key={d.day} className="flex items-center gap-3">
-              <div className="w-8 text-slate-600 font-mono text-[10px]">{d.day}</div>
-              <div className="flex-1 h-3 bg-[#111627] rounded-full overflow-hidden">
-                <div className="h-full bg-blue-600/70 transition-all rounded-full" style={{ width: `${d.rate}%` }} />
-              </div>
-              <div className="w-8 text-slate-400 font-mono text-[10px] text-right">{d.rate}%</div>
-            </div>
-          ))}
-        </div>
+    {/* Provider status table */}
+    <div className="bg-[#0C0F1A] border border-violet-900/30 rounded-xl overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-violet-900/30 flex items-center justify-between">
+        <span className="text-[12px] font-semibold text-violet-400">Upstream Provider Status</span>
+        <span className="text-[10px] font-mono text-slate-600">6 PROGRAMS</span>
       </div>
-
-      {/* Threat breakdown */}
-      <div className="bg-[#0C0F1A] border border-[#1E2540] rounded-xl overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-[#1E2540]">
-          <span className="text-[12px] font-semibold text-slate-300">Threat Category Breakdown</span>
-        </div>
-        <div className="p-5 space-y-4">
-          {THREAT_METRICS.map(m => (
-            <div key={m.label}>
-              <div className="flex justify-between mb-1.5">
-                <span className="text-slate-300 font-mono text-[11px]">{m.label}</span>
-                <span className="text-slate-500 font-mono text-[11px]">{m.count} active</span>
-              </div>
-              <div className="h-2 bg-[#111627] rounded-full overflow-hidden">
-                <div className="h-full bg-red-500/60 rounded-full" style={{ width: `${m.pct}%` }} />
-              </div>
-            </div>
-          ))}
-
-          <div className="border-t border-[#1E2540] pt-4 space-y-2">
-            {[
-              ['Daily Intercepts',   '4.2M'],
-              ['Processed',          '1.8M'],
-              ['Flagged for Review', '47,221'],
-              ['Forwarded to FBI',   '112'],
-            ].map(([k, v]) => (
-              <div key={k} className="flex justify-between font-mono text-[11px]">
-                <span className="text-slate-600">{k}</span>
-                <span className="text-slate-400">{v}</span>
-              </div>
+      <table className="w-full text-[12px]">
+        <thead>
+          <tr className="border-b border-[#1E2540] bg-[#080B14]">
+            {['Codename', 'Program', 'Source', 'Daily Vol', 'Selectors', 'Online Since', 'Status'].map(h => (
+              <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.08em]">{h}</th>
             ))}
-          </div>
-        </div>
-      </div>
-
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[#1A1F35]">
+          {PROVIDERS.map(p => (
+            <tr key={p.codename} className="hover:bg-violet-950/10 transition-colors">
+              <td className="px-4 py-3 font-mono font-bold text-violet-300 tracking-widest text-[11px]">{p.codename}</td>
+              <td className="px-4 py-3 font-mono text-slate-500 text-[10px]">{p.program}</td>
+              <td className="px-4 py-3 text-slate-400 text-[11px]">{p.company}</td>
+              <td className="px-4 py-3 font-mono text-slate-300 text-[11px]">{p.dailyVol}</td>
+              <td className="px-4 py-3 font-mono text-slate-400 text-[11px]">{p.selectors}</td>
+              <td className="px-4 py-3 font-mono text-slate-500 text-[11px]">{p.established}</td>
+              <td className="px-4 py-3">
+                <span className={`inline-block border rounded-full px-2.5 py-0.5 text-[10px] font-mono font-bold ${PROVIDER_STATUS_STYLE[p.status]}`}>
+                  {p.status}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
+
+    {/* Collection records */}
+    <div className="bg-[#0C0F1A] border border-[#1E2540] rounded-xl overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-[#1E2540] flex items-center justify-between">
+        <span className="text-[12px] font-semibold text-slate-300">Recent Collection Records</span>
+        <span className="text-[10px] font-mono text-slate-600">LAST 6 EVENTS</span>
+      </div>
+      <table className="w-full text-[12px]">
+        <thead>
+          <tr className="border-b border-[#1E2540] bg-[#080B14]">
+            {['UID', 'IP', 'Geo', 'Provider', 'Fingerprint', 'Connected Accounts', 'Token', 'Timestamp'].map(h => (
+              <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.08em]">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[#1A1F35]">
+          {RECORDS.map(r => (
+            <tr key={r.uid} className="hover:bg-[#111627] transition-colors">
+              <td className="px-4 py-3 font-mono text-violet-400 text-[10px]">{r.uid}</td>
+              <td className="px-4 py-3 font-mono text-slate-300 text-[10px]">{r.ip}</td>
+              <td className="px-4 py-3 text-slate-400 text-[11px]">{r.geo}</td>
+              <td className="px-4 py-3 font-mono text-[10px]">
+                <span className="text-violet-300 bg-violet-950/40 border border-violet-800/40 rounded px-1.5 py-0.5">{r.provider}</span>
+              </td>
+              <td className="px-4 py-3 font-mono text-slate-500 text-[10px]">{r.fingerprint}</td>
+              <td className="px-4 py-3">
+                <div className="flex flex-wrap gap-1">
+                  {r.accounts.map(a => (
+                    <span key={a} className="text-[9px] font-mono text-slate-400 bg-[#1A1F35] border border-[#28304E] rounded px-1.5 py-0.5">{a}</span>
+                  ))}
+                </div>
+              </td>
+              <td className="px-4 py-3 font-mono text-slate-600 text-[10px]">{r.token}</td>
+              <td className="px-4 py-3 font-mono text-slate-500 text-[10px]">{r.ts}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
   </div>
 )
