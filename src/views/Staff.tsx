@@ -4,44 +4,28 @@ import { hasPermission } from '../data/auth'
 import type { User } from '../data/auth'
 
 interface StaffProps {
-  user:     User
+  user:      User
   accounts?: User[]
 }
 
-interface StaffMember {
-  id:        string
-  codename:  string
-  role:      string
-  clearance: string
-  dept:      string
-  status:    'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
-}
-
-const STAFF: StaffMember[] = [
-  { id: 'NSA-001', codename: 'DIRECTOR',  role: 'Director',        clearance: 'TS/SCI/SAP', dept: 'EXECUTIVE',  status: 'ACTIVE'    },
-  { id: 'NSA-002', codename: 'RAVEN',     role: 'Deputy Director', clearance: 'TS/SCI',     dept: 'EXECUTIVE',  status: 'ACTIVE'    },
-  { id: 'NSA-003', codename: 'CIPHER',    role: 'Analyst',         clearance: 'TS/SCI',     dept: 'SIGINT',     status: 'ACTIVE'    },
-  { id: 'NSA-004', codename: 'WRAITH',    role: 'Field Officer',   clearance: 'TS',         dept: 'TAO',        status: 'ACTIVE'    },
-  { id: 'NSA-005', codename: 'SPECTER',   role: 'Analyst',         clearance: 'TS/SCI',     dept: 'TAO',        status: 'ACTIVE'    },
-  { id: 'NSA-006', codename: 'ORACLE',    role: 'Cryptanalyst',    clearance: 'TS/SCI/SAP', dept: 'CRYPTOLOGY', status: 'INACTIVE'  },
-  { id: 'NSA-007', codename: 'PHANTOM',   role: 'Surveillance',    clearance: 'SECRET',     dept: 'SCS',        status: 'ACTIVE'    },
-  { id: 'NSA-008', codename: 'VORTEX',    role: 'Systems Admin',   clearance: 'TS',         dept: 'IT/INFOSEC', status: 'SUSPENDED' },
-]
-
 const CLR: Record<string, string> = {
-  'TS/SCI/SAP': 'text-red-400   border-red-800/60   bg-red-950/40',
-  'TS/SCI':     'text-amber-400 border-amber-800/60 bg-amber-950/40',
-  'TS':         'text-yellow-400 border-yellow-800/60 bg-yellow-950/40',
-  'SECRET':     'text-blue-400  border-blue-800/60  bg-blue-950/40',
+  'TS/SCI/SAP':    'text-red-400   border-red-800/60   bg-red-950/40',
+  'TS/SCI + ECI':  'text-red-400   border-red-800/60   bg-red-950/40',
+  'TS/SCI':        'text-amber-400 border-amber-800/60 bg-amber-950/40',
+  'TS':            'text-yellow-400 border-yellow-800/60 bg-yellow-950/40',
+  'SECRET':        'text-blue-400  border-blue-800/60  bg-blue-950/40',
 }
 
 const STATUS_STYLE: Record<string, string> = {
+  active:    'text-green-400 bg-green-950/50 border-green-800/50',
   ACTIVE:    'text-green-400 bg-green-950/50 border-green-800/50',
+  inactive:  'text-slate-500 bg-slate-900/50 border-slate-700/50',
   INACTIVE:  'text-slate-500 bg-slate-900/50 border-slate-700/50',
+  suspended: 'text-red-400   bg-red-950/50   border-red-800/50',
   SUSPENDED: 'text-red-400   bg-red-950/50   border-red-800/50',
 }
 
-export default function Staff({ user }: StaffProps) {
+export default function Staff({ user, accounts = [] }: StaffProps) {
   const [query, setQuery] = useState('')
 
   if (!hasPermission(user, 'staffView')) {
@@ -54,15 +38,14 @@ export default function Staff({ user }: StaffProps) {
     )
   }
 
-  const filtered = STAFF.filter(s =>
-    s.codename.toLowerCase().includes(query.toLowerCase()) ||
-    s.dept.toLowerCase().includes(query.toLowerCase())
+  const filtered = accounts.filter(u =>
+    u.codename.toLowerCase().includes(query.toLowerCase()) ||
+    (u.dept ?? '').toLowerCase().includes(query.toLowerCase())
   )
 
   return (
     <div className="max-w-5xl mx-auto space-y-5">
 
-      {/* Header */}
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-lg font-semibold text-slate-100 tracking-wide">Staff Directory</h1>
@@ -81,7 +64,6 @@ export default function Staff({ user }: StaffProps) {
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-[#0C0F1A] border border-[#1E2540] rounded-xl overflow-hidden">
         <table className="w-full text-[12px]">
           <thead>
@@ -94,22 +76,22 @@ export default function Staff({ user }: StaffProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#1A1F35]">
-            {filtered.map(s => (
-              <tr key={s.id} className="hover:bg-[#111627]/60 transition-colors">
-                <td className="px-5 py-3.5 font-mono text-slate-600 text-[11px]">{s.id}</td>
-                <td className="px-5 py-3.5 font-mono font-semibold text-slate-100 tracking-wide">{s.codename}</td>
-                <td className="px-5 py-3.5 text-slate-400">{s.role}</td>
+            {filtered.map(u => (
+              <tr key={u.id} className="hover:bg-[#111627]/60 transition-colors">
+                <td className="px-5 py-3.5 font-mono text-slate-600 text-[11px]">{u.id}</td>
+                <td className="px-5 py-3.5 font-mono font-semibold text-slate-100 tracking-wide">{u.codename}</td>
+                <td className="px-5 py-3.5 text-slate-400">{u.rank ?? u.role}</td>
                 <td className="px-5 py-3.5">
                   <span className={`inline-block border rounded px-2 py-0.5 text-[10px] font-mono font-bold
-                    ${CLR[s.clearance] ?? 'text-slate-400 border-slate-700 bg-slate-900'}`}>
-                    {s.clearance}
+                    ${CLR[u.clearance] ?? 'text-slate-400 border-slate-700 bg-slate-900'}`}>
+                    {u.clearance}
                   </span>
                 </td>
-                <td className="px-5 py-3.5 font-mono text-slate-500 text-[11px]">{s.dept}</td>
+                <td className="px-5 py-3.5 font-mono text-slate-500 text-[11px]">{u.dept ?? '—'}</td>
                 <td className="px-5 py-3.5">
                   <span className={`inline-block border rounded-full px-2.5 py-0.5 text-[10px] font-mono font-bold
-                    ${STATUS_STYLE[s.status]}`}>
-                    {s.status}
+                    ${STATUS_STYLE[u.status] ?? STATUS_STYLE['active']}`}>
+                    {u.status.toUpperCase()}
                   </span>
                 </td>
               </tr>
@@ -117,7 +99,7 @@ export default function Staff({ user }: StaffProps) {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-5 py-10 text-center text-slate-600 font-mono text-[11px]">
-                  NO RECORDS MATCHING QUERY
+                  {accounts.length === 0 ? 'LOADING PERSONNEL DATA...' : 'NO RECORDS MATCHING QUERY'}
                 </td>
               </tr>
             )}
